@@ -1,0 +1,10 @@
+[
+  { "id": "iron_ore",    "name": "Iron Ore",    "baseValue": 10,  "mass": 5 },
+  { "id": "grain",       "name": "Grain",       "baseValue": 8,   "mass": 3 },
+  { "id": "water",       "name": "Water",       "baseValue": 4,   "mass": 4 },
+  { "id": "steel",       "name": "Steel",       "baseValue": 25,  "mass": 6 },
+  { "id": "meds",        "name": "Medicine",    "baseValue": 60,  "mass": 1 },
+  { "id": "electronics", "name": "Electronics", "baseValue": 90,  "mass": 2 },
+  { "id": "nullbloom",   "name": "Nullbloom",   "baseValue": 150, "mass": 1 },
+  { "id": "alien_tech",  "name": "Alien Tech",  "baseValue": 400, "mass": 3 }
+]

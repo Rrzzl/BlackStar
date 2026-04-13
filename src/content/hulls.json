@@ -1,0 +1,13 @@
+[
+  {
+    "id": "shrike",
+    "name": "Shrike",
+    "tier": 1,
+    "baseHp": 100,
+    "baseShield": 50,
+    "baseSpeed": 120,
+    "baseTurn": 2.5,
+    "basePower": 80,
+    "slots": { "weapon": 2, "internal": 2, "utility": 1, "core": 1 }
+  }
+]

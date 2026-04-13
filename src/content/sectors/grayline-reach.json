@@ -1,0 +1,45 @@
+{
+  "id": "grayline-reach",
+  "name": "Grayline Reach",
+  "bounds": { "w": 2400, "h": 1400 },
+  "bodies": [
+    { "id": "tessra-3", "name": "Tessra-3", "kind": "planet", "faction": "free_worlds", "x": 400, "y": 500, "r": 60 },
+    { "id": "kepler-7b", "name": "Kepler-7b", "kind": "planet", "faction": null, "x": 1800, "y": 900, "r": 70 },
+    { "id": "the-crossing", "name": "The Crossing", "kind": "station", "faction": "free_worlds", "x": 1100, "y": 600, "r": 25 },
+    { "id": "g-4-belt", "name": "Asteroid Belt G-4", "kind": "belt", "faction": null, "x": 1500, "y": 350, "r": 180 }
+  ],
+  "stations": [
+    {
+      "id": "the-crossing",
+      "stockpiles": [
+        { "goodId": "iron_ore", "equilibrium": 100 },
+        { "goodId": "grain", "equilibrium": 80 },
+        { "goodId": "water", "equilibrium": 120 },
+        { "goodId": "steel", "equilibrium": 60 },
+        { "goodId": "meds", "equilibrium": 40 },
+        { "goodId": "electronics", "equilibrium": 30 },
+        { "goodId": "alien_tech", "equilibrium": 10 }
+      ],
+      "production":  [["steel", 0.5], ["electronics", 0.3]],
+      "consumption": [["iron_ore", 0.6], ["grain", 0.4], ["water", 0.3]]
+    },
+    {
+      "id": "tessra-3",
+      "stockpiles": [
+        { "goodId": "grain", "equilibrium": 150 },
+        { "goodId": "water", "equilibrium": 180 },
+        { "goodId": "iron_ore", "equilibrium": 40 },
+        { "goodId": "meds", "equilibrium": 20 }
+      ],
+      "production":  [["grain", 1.0], ["water", 0.8]],
+      "consumption": [["iron_ore", 0.3], ["meds", 0.2]]
+    }
+  ],
+  "traderCount": 20,
+  "traderRoutes": [
+    { "from": "tessra-3",     "to": "the-crossing", "count": 8, "goods": ["grain", "water"] },
+    { "from": "the-crossing", "to": "kepler-7b",    "count": 6, "goods": ["alien_tech"] },
+    { "from": "tessra-3",     "to": "kepler-7b",    "count": 4, "goods": ["iron_ore"] },
+    { "from": "the-crossing", "to": "tessra-3",     "count": 2, "goods": ["meds", "electronics"] }
+  ]
+}

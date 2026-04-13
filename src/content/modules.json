@@ -1,0 +1,9 @@
+[
+  { "id": "pulse_laser_i", "name": "Pulse Laser I", "slot": "weapon", "powerDraw": 15, "description": "Light energy weapon.", "stats": { "damage": 8, "range": 400 } },
+  { "id": "autocannon_i", "name": "Autocannon I", "slot": "weapon", "powerDraw": 10, "description": "Kinetic rapid-fire.", "stats": { "damage": 5, "range": 300 } },
+  { "id": "shield_cap_i", "name": "Shield Capacitor I", "slot": "internal", "powerDraw": 20, "description": "+30 shield.", "stats": { "shield": 30 } },
+  { "id": "armor_plate_i", "name": "Armor Plate I", "slot": "internal", "powerDraw": 0, "description": "+25 HP.", "stats": { "hp": 25 } },
+  { "id": "cargo_hold_i", "name": "Cargo Hold I", "slot": "internal", "powerDraw": 0, "description": "+30 cargo.", "stats": { "cargo": 30 } },
+  { "id": "thruster_i", "name": "Thruster I", "slot": "utility", "powerDraw": 10, "description": "+20 speed.", "stats": { "speed": 20 } },
+  { "id": "reactor_core_i", "name": "Reactor Core I", "slot": "core", "powerDraw": -40, "description": "+40 power generated.", "stats": {} }
+]
