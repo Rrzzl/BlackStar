@@ -1,11 +1,58 @@
 import { Scene, type SceneContext } from "@engine/Scene";
 import type { CaptainState } from "@core/player/Captain";
+import { drawPanel } from "@ui/Panel";
+import { drawLabel } from "@ui/Label";
+import { drawButton } from "@ui/Button";
+import { SpaceScene } from "./SpaceScene";
+import { ShipLoadoutScene } from "./ShipLoadoutScene";
 
 export class StationScene extends Scene {
-  constructor(readonly captain: CaptainState, readonly seed: number, readonly stationId: string) {
+  constructor(
+    readonly captain: CaptainState,
+    readonly seed: number,
+    readonly stationId: string,
+  ) {
     super();
   }
+
   enter(_ctx: SceneContext): void {}
-  update(_ctx: SceneContext, _dt: number): void {}
-  render(_ctx: SceneContext): void {}
+
+  update(ctx: SceneContext, _dt: number): void {
+    if (ctx.input.wasKeyPressed("Escape")) {
+      ctx.changeScene(new SpaceScene(this.captain, this.seed));
+    }
+  }
+
+  render(ctx: SceneContext): void {
+    const r = ctx.renderer;
+    r.drawRect(0, 0, r.internalWidth, r.internalHeight, "#0a0d14");
+    const panel = { x: 40, y: 30, w: r.internalWidth - 80, h: r.internalHeight - 60 };
+    drawPanel(r, panel);
+    drawLabel(r, `STATION — ${this.stationId.toUpperCase()}`, panel.x + 10, panel.y + 10, "#e6ecf5", 10);
+    drawLabel(r, `${this.captain.name}, Captain`, panel.x + 10, panel.y + 28, "#8a98b0", 7);
+
+    const btnW = 120;
+    const btnH = 18;
+    const btnX = panel.x + 20;
+    let by = panel.y + 60;
+
+    drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Ship Loadout", () => {
+      ctx.changeScene(new ShipLoadoutScene(this.captain, this.seed, this.stationId));
+    });
+    by += 24;
+
+    const disabledStyle = { fill: "#1a1a22", fillHover: "#1a1a22", fillPressed: "#1a1a22", border: "#2a2a32", textColor: "#4a4a52" };
+
+    drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Shop (M2c)", () => {}, disabledStyle);
+    by += 24;
+
+    drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Missions (M2c)", () => {}, disabledStyle);
+    by += 24;
+
+    drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Depart", () => {
+      ctx.changeScene(new SpaceScene(this.captain, this.seed));
+    });
+
+    drawLabel(r, "ESC to depart", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
+  }
 }
