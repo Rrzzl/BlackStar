@@ -12,6 +12,8 @@ import { CURRENT_SAVE_VERSION, type SaveSnapshot } from "@core/world/SaveSnapsho
 import { drawLabel } from "@ui/Label";
 import { drawPauseOverlay } from "./PauseOverlay";
 import { TitleScene } from "./TitleScene";
+import { StationScene } from "./StationScene";
+import { PlanetLandingScene } from "./PlanetLandingScene";
 import sectorData from "@content/sectors/grayline-reach.json";
 import goodsData from "@content/goods.json";
 
@@ -109,6 +111,19 @@ export class SpaceScene extends Scene {
     if (ctx.input.wasKeyPressed("Escape")) this.paused = !this.paused;
     if (ctx.input.wasKeyPressed("F3")) this.debug.enabled = !this.debug.enabled;
     if (this.paused) return;
+
+    if (ctx.input.wasKeyPressed("KeyF")) {
+      const target = this.nearestInteractable();
+      if (target) {
+        if (target.kind === "station") {
+          ctx.changeScene(new StationScene(this.captain, this.seed, target.id));
+          return;
+        } else if (target.kind === "planet") {
+          ctx.changeScene(new PlanetLandingScene(this.captain, this.seed, target.id));
+          return;
+        }
+      }
+    }
 
     const input = ctx.input;
     const turnRate = 3.0;
@@ -209,6 +224,14 @@ export class SpaceScene extends Scene {
     );
     drawLabel(r, "WASD fly | ESC pause | F3 debug", 6, r.internalHeight - 10, "#506070", 6);
 
+    const near = this.nearestInteractable();
+    if (near) {
+      const verb =
+        near.kind === "station" ? "Dock" :
+        near.id === "kepler-7b" ? "Explore Ruin" : "Land";
+      drawLabel(r, `[F] ${verb} — ${near.name}`, r.internalWidth / 2, r.internalHeight - 24, "#e8b060", 7, "center");
+    }
+
     if (this.paused) {
       drawPauseOverlay(r, ctx.input, {
         onResume: () => {
@@ -222,6 +245,22 @@ export class SpaceScene extends Scene {
     }
 
     this.debug.render(r);
+  }
+
+  private nearestInteractable(): SectorBody | null {
+    let best: SectorBody | null = null;
+    let bestD = Infinity;
+    for (const b of this.sector.bodies) {
+      if (b.kind === "belt") continue;
+      const dx = b.x - this.ship.x;
+      const dy = b.y - this.ship.y;
+      const d = Math.hypot(dx, dy) - b.r;
+      if (d < 40 && d < bestD) {
+        bestD = d;
+        best = b;
+      }
+    }
+    return best;
   }
 
   private bodyColor(body: SectorBody): string {
