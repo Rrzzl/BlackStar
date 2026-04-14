@@ -68,7 +68,7 @@ export class CharacterCreationScene extends Scene {
           createdAt: Date.now(),
           deaths: 0,
         };
-        ctx.changeScene(new SpaceScene(captain));
+        ctx.changeScene(new SpaceScene(captain, Date.now() >>> 0));
       },
     );
 

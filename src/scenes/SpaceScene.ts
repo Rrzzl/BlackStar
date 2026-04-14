@@ -1,5 +1,6 @@
 import { Scene, type SceneContext } from "@engine/Scene";
 import { DebugOverlay } from "@engine/DebugOverlay";
+import { RNG } from "@engine/RNG";
 import type { CaptainState } from "@core/player/Captain";
 import type { SectorData, SectorBody } from "@core/world/Sector";
 import { buildStations } from "@core/world/Sector";
@@ -37,9 +38,11 @@ export class SpaceScene extends Scene {
   private paused = false;
   private debug = new DebugOverlay();
   private worldClockUnsubs: Array<() => void> = [];
+  private rng: RNG;
 
-  constructor(readonly captain: CaptainState) {
+  constructor(readonly captain: CaptainState, readonly seed: number) {
     super();
+    this.rng = new RNG(seed);
     this.debug.enabled = false;
     const goods = new GoodsRegistry(goodsData as unknown as GoodDef[]);
     const stations = buildStations(this.sector.stations);
@@ -60,9 +63,9 @@ export class SpaceScene extends Scene {
       for (let i = 0; i < route.count; i++) {
         this.traderVisuals.push({
           traderId: `t${vi++}`,
-          x: fromBody.x + (Math.random() - 0.5) * 40,
-          y: fromBody.y + (Math.random() - 0.5) * 40,
-          speed: 40 + Math.random() * 30,
+          x: fromBody.x + (this.rng.next() - 0.5) * 40,
+          y: fromBody.y + (this.rng.next() - 0.5) * 40,
+          speed: 40 + this.rng.next() * 30,
           target: toBody,
         });
       }
@@ -135,7 +138,7 @@ export class SpaceScene extends Scene {
           (b) => b !== tv.target && b.kind !== "belt",
         );
         if (others.length > 0) {
-          tv.target = others[Math.floor(Math.random() * others.length)]!;
+          tv.target = this.rng.pick(others);
         }
         continue;
       }
@@ -226,7 +229,7 @@ export class SpaceScene extends Scene {
   private buildSnapshot(ctx: SceneContext): SaveSnapshot {
     return {
       version: CURRENT_SAVE_VERSION,
-      seed: 0,
+      seed: this.seed,
       worldClock: ctx.worldClock.elapsed(),
       captain: this.captain,
       ship: {
@@ -268,6 +271,7 @@ export class SpaceScene extends Scene {
   }
 
   private applySnapshot(snap: SaveSnapshot): void {
+    this.rng = new RNG(snap.seed);
     this.ship.x = snap.ship.position.x;
     this.ship.y = snap.ship.position.y;
     this.ship.vx = snap.ship.velocity.x;
