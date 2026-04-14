@@ -1,6 +1,7 @@
 import { Scene, type SceneContext } from "@engine/Scene";
 import { DebugOverlay } from "@engine/DebugOverlay";
 import { RNG } from "@engine/RNG";
+import { Camera } from "@engine/Camera";
 import type { CaptainState } from "@core/player/Captain";
 import type { SectorData, SectorBody } from "@core/world/Sector";
 import { buildStations } from "@core/world/Sector";
@@ -39,6 +40,7 @@ export class SpaceScene extends Scene {
   private debug = new DebugOverlay();
   private worldClockUnsubs: Array<() => void> = [];
   private rng: RNG;
+  private camera = new Camera(0.15);
 
   constructor(readonly captain: CaptainState, readonly seed: number) {
     super();
@@ -128,6 +130,8 @@ export class SpaceScene extends Scene {
     this.ship.y += this.ship.vy * dt;
     this.ship.x = Math.max(0, Math.min(this.sector.bounds.w, this.ship.x));
     this.ship.y = Math.max(0, Math.min(this.sector.bounds.h, this.ship.y));
+    this.camera.follow(this.ship.x, this.ship.y);
+    this.camera.tick(dt);
 
     for (const tv of this.traderVisuals) {
       const dx = tv.target.x - tv.x;
@@ -153,8 +157,8 @@ export class SpaceScene extends Scene {
     const r = ctx.renderer;
     r.drawRect(0, 0, r.internalWidth, r.internalHeight, "#020308");
 
-    const camX = this.ship.x - r.internalWidth / 2;
-    const camY = this.ship.y - r.internalHeight / 2;
+    const camX = this.camera.offsetX(r.internalWidth);
+    const camY = this.camera.offsetY(r.internalHeight);
 
     for (let i = 0; i < 60; i++) {
       const bx = ((i * 131 + Math.floor(camX * 0.3)) % r.internalWidth + r.internalWidth) % r.internalWidth;
@@ -290,5 +294,6 @@ export class SpaceScene extends Scene {
         tv.y = t.position.y;
       }
     }
+    this.camera.snap(this.ship.x, this.ship.y);
   }
 }
