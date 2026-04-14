@@ -5,8 +5,13 @@ import { drawLabel } from "@ui/Label";
 import { drawButton } from "@ui/Button";
 import { SpaceScene } from "./SpaceScene";
 import { ShipLoadoutScene } from "./ShipLoadoutScene";
+import { drawPauseOverlay } from "./PauseOverlay";
+import { TitleScene } from "./TitleScene";
+import { CURRENT_SAVE_VERSION, type SaveSnapshot } from "@core/world/SaveSnapshot";
 
 export class StationScene extends Scene {
+  private paused = false;
+
   constructor(
     readonly captain: CaptainState,
     readonly seed: number,
@@ -18,6 +23,11 @@ export class StationScene extends Scene {
   enter(_ctx: SceneContext): void {}
 
   update(ctx: SceneContext, _dt: number): void {
+    if (ctx.input.wasKeyPressed("F10")) {
+      this.paused = !this.paused;
+      return;
+    }
+    if (this.paused) return;
     if (ctx.input.wasKeyPressed("Escape")) {
       ctx.changeScene(new SpaceScene(this.captain, this.seed));
     }
@@ -54,5 +64,44 @@ export class StationScene extends Scene {
     });
 
     drawLabel(r, "ESC to depart", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
+
+    if (this.paused) {
+      drawPauseOverlay(r, ctx.input, {
+        onResume: () => { this.paused = false; },
+        onSave: () => { ctx.saveStore.save(this.buildSnapshot(ctx)); },
+        onQuit: () => ctx.changeScene(new TitleScene()),
+      });
+    }
+  }
+
+  private buildSnapshot(ctx: SceneContext): SaveSnapshot {
+    return {
+      version: CURRENT_SAVE_VERSION,
+      seed: this.seed,
+      worldClock: ctx.worldClock.elapsed(),
+      captain: this.captain,
+      ship: {
+        hullId: "shrike",
+        moduleIds: [],
+        position: { x: 0, y: 0 },
+        velocity: { x: 0, y: 0 },
+        angle: 0,
+        hp: 100,
+        shield: 50,
+        credits: 500,
+        cargo: [],
+      },
+      sector: {
+        id: "grayline-reach",
+        playerBody: this.stationId,
+        traders: [],
+        stockpiles: [],
+      },
+      inventory: { items: [] },
+      factions: { free_worlds: { rep: 0 }, scrapfather: { rep: 0 } },
+      quests: { active: [], completed: [] },
+      outposts: {},
+      scene: { type: "StationScene", params: { stationId: this.stationId } },
+    };
   }
 }
