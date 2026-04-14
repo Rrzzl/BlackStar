@@ -1,34 +1,35 @@
 import type { Renderer } from "./Renderer";
 
 export class DebugOverlay {
-  enabled = true;
-  private frameTimes: number[] = [];
-  private readonly sampleSize = 60;
-  private lastSample = performance.now();
+  enabled = false;
+  private samples: number[] = [];
+  private readonly windowSize = 120;
+  private lastTick = performance.now();
 
   tick(): void {
     const now = performance.now();
-    const dt = now - this.lastSample;
-    this.lastSample = now;
-    this.frameTimes.push(dt);
-    if (this.frameTimes.length > this.sampleSize) this.frameTimes.shift();
+    const dtMs = now - this.lastTick;
+    this.lastTick = now;
+    this.samples.push(dtMs);
+    if (this.samples.length > this.windowSize) this.samples.shift();
   }
 
-  get fps(): number {
-    if (this.frameTimes.length === 0) return 0;
-    const avg = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
-    return avg > 0 ? 1000 / avg : 0;
+  worst(): number {
+    return this.samples.reduce((m, v) => (v > m ? v : m), 0);
   }
 
-  get frameMs(): number {
-    if (this.frameTimes.length === 0) return 0;
-    return this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
+  avg(): number {
+    if (this.samples.length === 0) return 0;
+    return this.samples.reduce((s, v) => s + v, 0) / this.samples.length;
   }
 
-  render(renderer: Renderer): void {
+  render(r: Renderer): void {
     if (!this.enabled) return;
-    const fps = this.fps.toFixed(0);
-    const ms = this.frameMs.toFixed(1);
-    renderer.drawText(`FPS ${fps}  ${ms}ms`, 4, 4, "#8fe08f");
+    const worst = this.worst();
+    const avg = this.avg();
+    const worstColor = worst > 20 ? "#d96a6a" : "#8fd97a";
+    r.drawRect(r.internalWidth - 100, 2, 98, 18, "#00000080");
+    r.drawText(`worst ${worst.toFixed(1)}ms`, r.internalWidth - 96, 4, worstColor, 6);
+    r.drawText(`avg   ${avg.toFixed(1)}ms`, r.internalWidth - 96, 12, "#cfd8e8", 6);
   }
 }
