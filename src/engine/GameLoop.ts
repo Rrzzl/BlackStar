@@ -52,7 +52,6 @@ export class GameLoop {
 
       while (this.accumulator >= this.fixedDt) {
         this.scene.update(this.ctx, this.fixedDt);
-        this.ctx.input.endFrame();
         this.accumulator -= this.fixedDt;
       }
 
@@ -62,6 +61,7 @@ export class GameLoop {
       this.scene.render(this.ctx, alpha);
       this.ctx.renderer.endFrame();
 
+      this.ctx.input.endFrame();
       this.rafHandle = requestAnimationFrame(tick);
     };
     this.rafHandle = requestAnimationFrame(tick);
