@@ -16,12 +16,13 @@ export class Audio {
     this.buffers.set(id, buf);
   }
 
-  play(id: string, volume = 1): void {
+  play(id: string, volume = 1, loop = false): void {
     const buf = this.buffers.get(id);
     if (!buf) return;
     const ctx = this.ensure();
     const src = ctx.createBufferSource();
     src.buffer = buf;
+    src.loop = loop;
     const gain = ctx.createGain();
     gain.gain.value = volume * this.masterVol;
     src.connect(gain).connect(ctx.destination);

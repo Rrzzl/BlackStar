@@ -82,6 +82,7 @@ export class SpaceScene extends Scene {
   }
 
   enter(ctx: SceneContext): void {
+    ctx.audio.play("ambient_space", 0.2, true);
     this.worldClockUnsubs.push(
       ctx.worldClock.subscribe(1, (dt) => {
         this.economy.tick(dt);

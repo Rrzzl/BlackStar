@@ -4,6 +4,11 @@ import { drawPanel } from "./Panel";
 import { drawLabel } from "./Label";
 import { containsPoint, type Rect } from "./Layout";
 
+let audioHook: ((id: string) => void) | null = null;
+export function setButtonAudioHook(fn: ((id: string) => void) | null): void {
+  audioHook = fn;
+}
+
 export interface ButtonStyle {
   fill: string;
   fillHover: string;
@@ -42,5 +47,8 @@ export function drawButton(
     8,
     "center",
   );
-  if (hovered && input.wasMousePressed(0)) onClick();
+  if (hovered && input.wasMousePressed(0)) {
+    if (audioHook) audioHook("click");
+    onClick();
+  }
 }
