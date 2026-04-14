@@ -8,6 +8,7 @@ import { ShipLoadoutScene } from "./ShipLoadoutScene";
 import { drawPauseOverlay } from "./PauseOverlay";
 import { TitleScene } from "./TitleScene";
 import { CURRENT_SAVE_VERSION, type SaveSnapshot } from "@core/world/SaveSnapshot";
+import type { Loadout } from "@core/ship/Loadout";
 
 export class StationScene extends Scene {
   private paused = false;
@@ -15,6 +16,7 @@ export class StationScene extends Scene {
   constructor(
     readonly captain: CaptainState,
     readonly seed: number,
+    readonly loadout: Loadout,
     readonly stationId: string,
   ) {
     super();
@@ -29,7 +31,7 @@ export class StationScene extends Scene {
     }
     if (this.paused) return;
     if (ctx.input.wasKeyPressed("Escape")) {
-      ctx.changeScene(new SpaceScene(this.captain, this.seed));
+      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout));
     }
   }
 
@@ -47,7 +49,7 @@ export class StationScene extends Scene {
     let by = panel.y + 60;
 
     drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Ship Loadout", () => {
-      ctx.changeScene(new ShipLoadoutScene(this.captain, this.seed, this.stationId));
+      ctx.changeScene(new ShipLoadoutScene(this.captain, this.seed, this.loadout, this.stationId));
     });
     by += 24;
 
@@ -60,7 +62,7 @@ export class StationScene extends Scene {
     by += 24;
 
     drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Depart", () => {
-      ctx.changeScene(new SpaceScene(this.captain, this.seed));
+      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout));
     });
 
     drawLabel(r, "ESC to depart", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");

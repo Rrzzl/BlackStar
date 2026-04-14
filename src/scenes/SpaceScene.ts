@@ -14,6 +14,7 @@ import { drawPauseOverlay } from "./PauseOverlay";
 import { TitleScene } from "./TitleScene";
 import { StationScene } from "./StationScene";
 import { PlanetLandingScene } from "./PlanetLandingScene";
+import type { Loadout } from "@core/ship/Loadout";
 import sectorData from "@content/sectors/grayline-reach.json";
 import goodsData from "@content/goods.json";
 
@@ -44,7 +45,11 @@ export class SpaceScene extends Scene {
   private rng: RNG;
   private camera = new Camera(0.15);
 
-  constructor(readonly captain: CaptainState, readonly seed: number) {
+  constructor(
+    readonly captain: CaptainState,
+    readonly seed: number,
+    readonly loadout: Loadout,
+  ) {
     super();
     this.rng = new RNG(seed);
     this.debug.enabled = false;
@@ -116,10 +121,10 @@ export class SpaceScene extends Scene {
       const target = this.nearestInteractable();
       if (target) {
         if (target.kind === "station") {
-          ctx.changeScene(new StationScene(this.captain, this.seed, target.id));
+          ctx.changeScene(new StationScene(this.captain, this.seed, this.loadout, target.id));
           return;
         } else if (target.kind === "planet") {
-          ctx.changeScene(new PlanetLandingScene(this.captain, this.seed, target.id));
+          ctx.changeScene(new PlanetLandingScene(this.captain, this.seed, this.loadout, target.id));
           return;
         }
       }

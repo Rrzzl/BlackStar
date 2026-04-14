@@ -5,6 +5,14 @@ import { drawLabel } from "@ui/Label";
 import { drawButton } from "@ui/Button";
 import { SpaceScene } from "./SpaceScene";
 import { TitleScene } from "./TitleScene";
+import { Loadout } from "@core/ship/Loadout";
+import type { HullDef } from "@core/ship/HullDef";
+import type { ModuleDef } from "@core/ship/ModuleDef";
+import hullsData from "@content/hulls.json";
+import modulesData from "@content/modules.json";
+
+const HULLS = hullsData as unknown as HullDef[];
+const MODULES = modulesData as unknown as ModuleDef[];
 
 const PAINTS = ["#b94a3a", "#3a87b9", "#6cb94a", "#b9a83a"];
 const SPECIES: Species[] = ["human"];
@@ -68,7 +76,11 @@ export class CharacterCreationScene extends Scene {
           createdAt: Date.now(),
           deaths: 0,
         };
-        ctx.changeScene(new SpaceScene(captain, Date.now() >>> 0));
+        const shrike = HULLS.find((h) => h.id === "shrike")!;
+        const loadout = new Loadout(shrike);
+        const reactor = MODULES.find((m) => m.id === "reactor_core_i");
+        if (reactor) loadout.install(reactor);
+        ctx.changeScene(new SpaceScene(captain, Date.now() >>> 0, loadout));
       },
     );
 

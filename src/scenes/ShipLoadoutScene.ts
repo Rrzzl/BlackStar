@@ -4,36 +4,28 @@ import { drawPanel } from "@ui/Panel";
 import { drawLabel } from "@ui/Label";
 import { drawButton } from "@ui/Button";
 import { StationScene } from "./StationScene";
-import { Loadout } from "@core/ship/Loadout";
-import type { HullDef } from "@core/ship/HullDef";
+import type { Loadout } from "@core/ship/Loadout";
 import type { ModuleDef } from "@core/ship/ModuleDef";
 import { calcPowerBudget } from "@core/ship/PowerBudget";
-import hullsData from "@content/hulls.json";
 import modulesData from "@content/modules.json";
 
-const HULLS = hullsData as unknown as HullDef[];
 const MODULES = modulesData as unknown as ModuleDef[];
 
 export class ShipLoadoutScene extends Scene {
-  private loadout: Loadout;
-
   constructor(
     readonly captain: CaptainState,
     readonly seed: number,
+    readonly loadout: Loadout,
     readonly stationId: string,
   ) {
     super();
-    const shrike = HULLS.find((h) => h.id === "shrike")!;
-    this.loadout = new Loadout(shrike);
-    const reactor = MODULES.find((m) => m.id === "reactor_core_i");
-    if (reactor) this.loadout.install(reactor);
   }
 
   enter(_ctx: SceneContext): void {}
 
   update(ctx: SceneContext, _dt: number): void {
     if (ctx.input.wasKeyPressed("Escape")) {
-      ctx.changeScene(new StationScene(this.captain, this.seed, this.stationId));
+      ctx.changeScene(new StationScene(this.captain, this.seed, this.loadout, this.stationId));
     }
   }
 
