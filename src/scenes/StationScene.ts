@@ -41,6 +41,7 @@ export class StationScene extends Scene {
 
   render(ctx: SceneContext): void {
     const r = ctx.renderer;
+    const showPicker = this.paused && this.savingSlot;
     r.drawRect(0, 0, r.internalWidth, r.internalHeight, "#0a0d14");
     const panel = { x: 40, y: 30, w: r.internalWidth - 80, h: r.internalHeight - 60 };
     drawPanel(r, panel);
@@ -71,7 +72,7 @@ export class StationScene extends Scene {
 
     drawLabel(r, "ESC depart · P pause", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
 
-    if (this.paused) {
+    if (this.paused && !showPicker) {
       drawPauseOverlay(r, ctx.input, {
         onResume: () => { this.paused = false; },
         onSave: () => { this.savingSlot = true; },
@@ -79,7 +80,7 @@ export class StationScene extends Scene {
       });
     }
 
-    if (this.paused && this.savingSlot) {
+    if (showPicker) {
       drawSaveSlotPicker(ctx.renderer, ctx.input, {
         slots: SaveStore.SLOT_IDS.map((id) => ({ id, snap: SaveStore.loadFromSlot(id, migrations) })),
         onPick: (id) => {

@@ -125,7 +125,7 @@ export class SpaceScene extends Scene {
 
   update(ctx: SceneContext, dt: number): void {
     this.debug.tick();
-    if (ctx.input.wasKeyPressed("Escape")) this.paused = !this.paused;
+    if (ctx.input.wasKeyPressed("KeyP")) this.paused = !this.paused;
     if (ctx.input.wasKeyPressed("F3")) this.debug.enabled = !this.debug.enabled;
     if (this.paused) return;
 
@@ -239,7 +239,7 @@ export class SpaceScene extends Scene {
       "#8a98b0",
       6,
     );
-    drawLabel(r, "WASD fly | ESC pause | F3 debug", 6, r.internalHeight - 10, "#506070", 6);
+    drawLabel(r, "WASD fly | P pause | F3 debug", 6, r.internalHeight - 10, "#506070", 6);
 
     const near = this.nearestInteractable();
     if (near) {
