@@ -2,6 +2,38 @@ import { DebugOverlay } from "@engine/DebugOverlay";
 import { RNG } from "@core/RNG";
 import { Scene, type SceneContext } from "@engine/Scene";
 import { CharacterCreationScene } from "./CharacterCreationScene";
+import { drawSaveSlotPicker } from "./SaveSlotPickerOverlay";
+import { SaveStore } from "@engine/Save";
+import { migrations } from "@core/world/migrations";
+import { Loadout } from "@core/ship/Loadout";
+import type { HullDef } from "@core/ship/HullDef";
+import hullsData from "@content/hulls.json";
+import type { SaveSnapshot } from "@core/world/SaveSnapshot";
+import { SpaceScene } from "./SpaceScene";
+import { StationScene } from "./StationScene";
+import { PlanetLandingScene } from "./PlanetLandingScene";
+import { DungeonScene } from "./DungeonScene";
+import { drawButton } from "@ui/Button";
+
+const HULLS = hullsData as unknown as HullDef[];
+
+function sceneFromSnapshot(snap: SaveSnapshot): Scene {
+  const shrike = HULLS.find((h) => h.id === "shrike")!;
+  const loadout = new Loadout(shrike);
+  const { captain, seed } = snap;
+  switch (snap.scene.type) {
+    case "SpaceScene":
+      return new SpaceScene(captain, seed, loadout);
+    case "StationScene":
+      return new StationScene(captain, seed, loadout, String(snap.scene.params?.stationId ?? ""));
+    case "PlanetLandingScene":
+      return new PlanetLandingScene(captain, seed, loadout, String(snap.scene.params?.planetId ?? ""));
+    case "DungeonScene":
+      return new DungeonScene(captain, seed, loadout, String(snap.scene.params?.planetId ?? ""));
+    default:
+      return new SpaceScene(captain, seed, loadout);
+  }
+}
 
 interface Star {
   x: number;
@@ -17,6 +49,7 @@ export class TitleScene extends Scene {
   private elapsed = 0;
   private readonly titleFadeIn = 1.2;
   private acceptInputAfter = 0.4;
+  private pickingSlot = false;
 
   constructor() {
     super();
@@ -46,7 +79,7 @@ export class TitleScene extends Scene {
     this.debug.tick();
     this.elapsed += dt;
     if (ctx.input.wasKeyPressed("F3")) this.debug.enabled = !this.debug.enabled;
-    if (this.elapsed >= this.acceptInputAfter) {
+    if (!this.pickingSlot && this.elapsed >= this.acceptInputAfter) {
       for (const code of ["Space", "Enter", "KeyZ", "KeyX", "KeyW", "KeyA", "KeyS", "KeyD"]) {
         if (ctx.input.wasKeyPressed(code)) {
           ctx.changeScene(new CharacterCreationScene());
@@ -84,6 +117,35 @@ export class TitleScene extends Scene {
     }
 
     this.debug.render(r);
+
+    if (this.elapsed > this.titleFadeIn + 0.6 && !this.pickingSlot) {
+      drawButton(
+        ctx.renderer,
+        ctx.input,
+        { x: cx - 40, y: cy + 52, w: 80, h: 16 },
+        "Continue",
+        () => { this.pickingSlot = true; },
+      );
+    }
+
+    if (this.pickingSlot) {
+      const slots = SaveStore.SLOT_IDS.map((id) => ({
+        id,
+        snap: SaveStore.loadFromSlot(id, migrations),
+      }));
+      drawSaveSlotPicker(ctx.renderer, ctx.input, {
+        slots,
+        onPick: (id) => {
+          const snap = SaveStore.loadFromSlot(id, migrations);
+          if (snap) {
+            ctx.changeScene(sceneFromSnapshot(snap));
+          } else {
+            ctx.changeScene(new CharacterCreationScene());
+          }
+        },
+        onCancel: () => { this.pickingSlot = false; },
+      });
+    }
   }
 }
 

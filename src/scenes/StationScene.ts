@@ -9,9 +9,13 @@ import { drawPauseOverlay } from "./PauseOverlay";
 import { TitleScene } from "./TitleScene";
 import { CURRENT_SAVE_VERSION, type SaveSnapshot } from "@core/world/SaveSnapshot";
 import type { Loadout } from "@core/ship/Loadout";
+import { drawSaveSlotPicker } from "./SaveSlotPickerOverlay";
+import { SaveStore } from "@engine/Save";
+import { migrations } from "@core/world/migrations";
 
 export class StationScene extends Scene {
   private paused = false;
+  private savingSlot = false;
 
   constructor(
     readonly captain: CaptainState,
@@ -70,8 +74,20 @@ export class StationScene extends Scene {
     if (this.paused) {
       drawPauseOverlay(r, ctx.input, {
         onResume: () => { this.paused = false; },
-        onSave: () => { ctx.saveStore.save(this.buildSnapshot(ctx)); },
+        onSave: () => { this.savingSlot = true; },
         onQuit: () => ctx.changeScene(new TitleScene()),
+      });
+    }
+
+    if (this.paused && this.savingSlot) {
+      drawSaveSlotPicker(ctx.renderer, ctx.input, {
+        slots: SaveStore.SLOT_IDS.map((id) => ({ id, snap: SaveStore.loadFromSlot(id, migrations) })),
+        onPick: (id) => {
+          SaveStore.saveToSlot(id, this.buildSnapshot(ctx));
+          this.savingSlot = false;
+        },
+        onCancel: () => { this.savingSlot = false; },
+        title: "SAVE TO SLOT",
       });
     }
   }
