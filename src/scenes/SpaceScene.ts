@@ -1,6 +1,6 @@
 import { Scene, type SceneContext } from "@engine/Scene";
 import { DebugOverlay } from "@engine/DebugOverlay";
-import { RNG } from "@engine/RNG";
+import { RNG } from "@core/RNG";
 import { Camera } from "@engine/Camera";
 import type { CaptainState } from "@core/player/Captain";
 import type { SectorData, SectorBody } from "@core/world/Sector";

@@ -1,5 +1,5 @@
 import { DebugOverlay } from "@engine/DebugOverlay";
-import { RNG } from "@engine/RNG";
+import { RNG } from "@core/RNG";
 import { Scene, type SceneContext } from "@engine/Scene";
 import { CharacterCreationScene } from "./CharacterCreationScene";
 
