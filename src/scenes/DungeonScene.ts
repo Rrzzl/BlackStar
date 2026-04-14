@@ -45,6 +45,16 @@ export class DungeonScene extends Scene {
     return { x: 1, y: 1 };
   }
 
+  private doorPositions(room: RoomDef): Array<{ x: number; y: number }> {
+    const positions: Array<{ x: number; y: number }> = [];
+    for (let y = 0; y < room.height; y++) {
+      for (let x = 0; x < room.width; x++) {
+        if (tileAt(room, x, y) === "+") positions.push({ x, y });
+      }
+    }
+    return positions;
+  }
+
   private isWalkable(room: RoomDef, px: number, py: number): boolean {
     const tx = Math.floor(px / TILE);
     const ty = Math.floor(py / TILE);
@@ -74,6 +84,26 @@ export class DungeonScene extends Scene {
     const nextY = this.playerY + dy * speed * dt;
     if (this.isWalkable(room, nextX, this.playerY)) this.playerX = nextX;
     if (this.isWalkable(room, this.playerX, nextY)) this.playerY = nextY;
+
+    const tx = Math.floor(this.playerX / TILE);
+    const ty = Math.floor(this.playerY / TILE);
+    if (tileAt(room, tx, ty) === "+") {
+      const doorIdx = this.doorPositions(room).findIndex((p) => p.x === tx && p.y === ty);
+      const placedDoors = this.dungeon.rooms[this.currentRoom]!.doors;
+      if (doorIdx >= 0 && placedDoors.length > 0) {
+        const nextRoomIdx = placedDoors[doorIdx % placedDoors.length];
+        if (nextRoomIdx !== undefined) {
+          this.currentRoom = nextRoomIdx;
+          const newRoom = this.roomDef();
+          const newDoors = this.doorPositions(newRoom);
+          const spawnAt = newDoors[0] ?? this.findSpawn(newRoom);
+          const nudgeX = spawnAt.x === 0 ? 1 : spawnAt.x === newRoom.width - 1 ? -1 : 0;
+          const nudgeY = spawnAt.y === 0 ? 1 : spawnAt.y === newRoom.height - 1 ? -1 : 0;
+          this.playerX = (spawnAt.x + nudgeX) * TILE + TILE / 2;
+          this.playerY = (spawnAt.y + nudgeY) * TILE + TILE / 2;
+        }
+      }
+    }
   }
 
   render(ctx: SceneContext, _alpha: number): void {
