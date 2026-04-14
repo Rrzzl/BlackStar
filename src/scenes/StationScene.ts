@@ -29,13 +29,13 @@ export class StationScene extends Scene {
   enter(_ctx: SceneContext): void {}
 
   update(ctx: SceneContext, _dt: number): void {
-    if (ctx.input.wasKeyPressed("F10")) {
+    if (ctx.input.wasKeyPressed("KeyP")) {
       this.paused = !this.paused;
       return;
     }
     if (this.paused) return;
     if (ctx.input.wasKeyPressed("Escape")) {
-      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout));
+      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout, this.stationId));
     }
   }
 
@@ -66,10 +66,10 @@ export class StationScene extends Scene {
     by += 24;
 
     drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Depart", () => {
-      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout));
+      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout, this.stationId));
     });
 
-    drawLabel(r, "ESC to depart", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
+    drawLabel(r, "ESC depart · P pause", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
 
     if (this.paused) {
       drawPauseOverlay(r, ctx.input, {

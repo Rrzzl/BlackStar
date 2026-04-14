@@ -49,10 +49,21 @@ export class SpaceScene extends Scene {
     readonly captain: CaptainState,
     readonly seed: number,
     readonly loadout: Loadout,
+    spawnBodyId?: string,
   ) {
     super();
     this.rng = new RNG(seed);
     this.debug.enabled = false;
+    if (spawnBodyId) {
+      const body = (sectorData as unknown as SectorData).bodies.find((b) => b.id === spawnBodyId);
+      if (body) {
+        this.ship.x = body.x + body.r + 24;
+        this.ship.y = body.y;
+        this.ship.vx = 0;
+        this.ship.vy = 0;
+      }
+    }
+    this.camera.snap(this.ship.x, this.ship.y);
     const goods = new GoodsRegistry(goodsData as unknown as GoodDef[]);
     const stations = buildStations(this.sector.stations);
     const traders: Trader[] = [];

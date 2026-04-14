@@ -21,7 +21,7 @@ export class PlanetLandingScene extends Scene {
 
   update(ctx: SceneContext, _dt: number): void {
     if (ctx.input.wasKeyPressed("Escape")) {
-      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout));
+      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout, this.planetId));
     }
   }
 
@@ -51,7 +51,7 @@ export class PlanetLandingScene extends Scene {
     }
 
     drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Return to Orbit", () => {
-      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout));
+      ctx.changeScene(new SpaceScene(this.captain, this.seed, this.loadout, this.planetId));
     });
 
     drawLabel(r, "ESC to return to orbit", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
