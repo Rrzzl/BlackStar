@@ -245,6 +245,7 @@ export class SpaceScene extends Scene {
       },
       sector: {
         id: this.sector.id,
+        playerBody: null,
         traders: this.traderVisuals.map((tv) => ({
           id: tv.traderId,
           archetype: "hauler",

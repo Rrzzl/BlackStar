@@ -1,7 +1,7 @@
 import type { CaptainState } from '@core/player/Captain';
 import type { PlayerShipState } from '@core/player/PlayerShip';
 
-export const CURRENT_SAVE_VERSION = 1;
+export const CURRENT_SAVE_VERSION = 2;
 
 export interface SaveSnapshot {
   version: number;
@@ -13,6 +13,7 @@ export interface SaveSnapshot {
     id: string;
     traders: SerializedTrader[];
     stockpiles: SerializedStockpile[];
+    playerBody: string | null;
   };
   inventory: { items: Array<{ id: string; qty: number }> };
   factions: Record<string, { rep: number }>;

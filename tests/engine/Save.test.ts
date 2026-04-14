@@ -4,7 +4,7 @@ import type { SaveSnapshot, Migration } from '@core/world/SaveSnapshot';
 
 function makeSnap(): SaveSnapshot {
   return {
-    version: 1,
+    version: 2,
     seed: 1,
     worldClock: 0,
     captain: {
@@ -26,7 +26,7 @@ function makeSnap(): SaveSnapshot {
       credits: 0,
       cargo: [],
     },
-    sector: { id: 'grayline-reach', traders: [], stockpiles: [] },
+    sector: { id: 'grayline-reach', traders: [], stockpiles: [], playerBody: null },
     inventory: { items: [] },
     factions: {},
     quests: { active: [], completed: [] },
@@ -73,9 +73,10 @@ describe('SaveStore', () => {
     );
     const migrations: Migration[] = [
       { from: 0, to: 1, apply: (raw) => ({ ...raw, version: 1 }) },
+      { from: 1, to: 2, apply: (raw) => ({ ...raw, version: 2 }) },
     ];
     const store = new SaveStore('slotA', migrations);
     const loaded = store.load();
-    expect(loaded?.version).toBe(1);
+    expect(loaded?.version).toBe(2);
   });
 });

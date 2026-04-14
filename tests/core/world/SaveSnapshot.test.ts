@@ -60,10 +60,18 @@ describe('SaveSnapshot', () => {
           return { ...raw, captain, version: 1 };
         },
       },
+      {
+        from: 1,
+        to: 2,
+        apply: (raw) => {
+          const sector = { ...(raw.sector as Record<string, unknown>), playerBody: null };
+          return { ...raw, sector, version: 2 };
+        },
+      },
     ];
 
     const migrated = migrate(v0, migrations);
-    expect(migrated.version).toBe(1);
+    expect(migrated.version).toBe(2);
     expect(migrated.captain.deaths).toBe(0);
   });
 

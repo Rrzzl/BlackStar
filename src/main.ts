@@ -4,6 +4,7 @@ import { Renderer } from "@engine/Renderer";
 import { Assets } from "@engine/Assets";
 import { Audio } from "@engine/Audio";
 import { SaveStore } from "@engine/Save";
+import { migrations } from "@core/world/migrations";
 import { WorldClock } from "@core/world/WorldClock";
 import { TitleScene } from "./scenes/TitleScene";
 
@@ -21,7 +22,7 @@ const renderer = new Renderer(canvas);
 const input = new Input(canvas);
 const assets = new Assets();
 const audio = new Audio();
-const saveStore = new SaveStore("slot0", []);
+const saveStore = new SaveStore("slot0", migrations);
 const worldClock = new WorldClock();
 
 const loop = new GameLoop(new TitleScene(), {
