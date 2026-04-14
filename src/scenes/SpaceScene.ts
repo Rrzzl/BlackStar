@@ -26,7 +26,7 @@ interface TraderVisual {
   x: number;
   y: number;
   speed: number;
-  targetBodyId: string;
+  target: SectorBody;
 }
 
 export class SpaceScene extends Scene {
@@ -63,7 +63,7 @@ export class SpaceScene extends Scene {
           x: fromBody.x + (Math.random() - 0.5) * 40,
           y: fromBody.y + (Math.random() - 0.5) * 40,
           speed: 40 + Math.random() * 30,
-          targetBodyId: toBody.id,
+          target: toBody,
         });
       }
     }
@@ -127,17 +127,16 @@ export class SpaceScene extends Scene {
     this.ship.y = Math.max(0, Math.min(this.sector.bounds.h, this.ship.y));
 
     for (const tv of this.traderVisuals) {
-      const target = this.sector.bodies.find((b) => b.id === tv.targetBodyId);
-      if (!target) continue;
-      const dx = target.x - tv.x;
-      const dy = target.y - tv.y;
+      const dx = tv.target.x - tv.x;
+      const dy = tv.target.y - tv.y;
       const d = Math.hypot(dx, dy);
-      if (d < target.r + 10) {
+      if (d < tv.target.r + 10) {
         const others = this.sector.bodies.filter(
-          (b) => b.id !== tv.targetBodyId && b.kind !== "belt",
+          (b) => b !== tv.target && b.kind !== "belt",
         );
-        const pick = others[Math.floor(Math.random() * others.length)];
-        if (pick) tv.targetBodyId = pick.id;
+        if (others.length > 0) {
+          tv.target = others[Math.floor(Math.random() * others.length)]!;
+        }
         continue;
       }
       tv.x += (dx / d) * tv.speed * dt;
