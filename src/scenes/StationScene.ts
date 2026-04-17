@@ -100,8 +100,8 @@ export class StationScene extends Scene {
       worldClock: ctx.worldClock.elapsed(),
       captain: this.captain,
       ship: {
-        hullId: "shrike",
-        moduleIds: [],
+        hullId: this.loadout.hull.id,
+        moduleIds: this.loadout.installed().map((m) => m.id),
         position: { x: 0, y: 0 },
         velocity: { x: 0, y: 0 },
         angle: 0,

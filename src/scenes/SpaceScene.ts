@@ -11,6 +11,9 @@ import { Trader } from "@core/economy/Trader";
 import { CURRENT_SAVE_VERSION, type SaveSnapshot } from "@core/world/SaveSnapshot";
 import { drawLabel } from "@ui/Label";
 import { drawPauseOverlay } from "./PauseOverlay";
+import { drawSaveSlotPicker } from "./SaveSlotPickerOverlay";
+import { SaveStore } from "@engine/Save";
+import { migrations } from "@core/world/migrations";
 import { TitleScene } from "./TitleScene";
 import { StationScene } from "./StationScene";
 import { PlanetLandingScene } from "./PlanetLandingScene";
@@ -40,21 +43,27 @@ export class SpaceScene extends Scene {
   private economy: Economy;
   private traderVisuals: TraderVisual[] = [];
   private paused = false;
+  private savingSlot = false;
   private debug = new DebugOverlay();
   private worldClockUnsubs: Array<() => void> = [];
   private rng: RNG;
   private camera = new Camera(0.15);
+
+  private pendingSnapshot: SaveSnapshot | null = null;
 
   constructor(
     readonly captain: CaptainState,
     readonly seed: number,
     readonly loadout: Loadout,
     spawnBodyId?: string,
+    snapshot?: SaveSnapshot,
   ) {
     super();
     this.rng = new RNG(seed);
     this.debug.enabled = false;
-    if (spawnBodyId) {
+    if (snapshot) {
+      this.pendingSnapshot = snapshot;
+    } else if (spawnBodyId) {
       const body = (sectorData as unknown as SectorData).bodies.find((b) => b.id === spawnBodyId);
       if (body) {
         this.ship.x = body.x + body.r + 24;
@@ -112,9 +121,9 @@ export class SpaceScene extends Scene {
       }),
     );
 
-    const existing = ctx.saveStore.load();
-    if (existing && existing.scene.type === "SpaceScene") {
-      this.applySnapshot(existing);
+    if (this.pendingSnapshot) {
+      this.applySnapshot(this.pendingSnapshot);
+      this.pendingSnapshot = null;
     }
   }
 
@@ -249,15 +258,25 @@ export class SpaceScene extends Scene {
       drawLabel(r, `[F] ${verb} — ${near.name}`, r.internalWidth / 2, r.internalHeight - 24, "#e8b060", 7, "center");
     }
 
-    if (this.paused) {
+    const showPicker = this.paused && this.savingSlot;
+    if (this.paused && !showPicker) {
       drawPauseOverlay(r, ctx.input, {
         onResume: () => {
           this.paused = false;
         },
-        onSave: () => {
-          ctx.saveStore.save(this.buildSnapshot(ctx));
-        },
+        onSave: () => { this.savingSlot = true; },
         onQuit: () => ctx.changeScene(new TitleScene()),
+      });
+    }
+    if (showPicker) {
+      drawSaveSlotPicker(r, ctx.input, {
+        slots: SaveStore.SLOT_IDS.map((id) => ({ id, snap: SaveStore.loadFromSlot(id, migrations) })),
+        onPick: (id) => {
+          SaveStore.saveToSlot(id, this.buildSnapshot(ctx));
+          this.savingSlot = false;
+        },
+        onCancel: () => { this.savingSlot = false; },
+        title: "SAVE TO SLOT",
       });
     }
 
@@ -293,8 +312,8 @@ export class SpaceScene extends Scene {
       worldClock: ctx.worldClock.elapsed(),
       captain: this.captain,
       ship: {
-        hullId: "shrike",
-        moduleIds: [],
+        hullId: this.loadout.hull.id,
+        moduleIds: this.loadout.installed().map((m) => m.id),
         position: { x: this.ship.x, y: this.ship.y },
         velocity: { x: this.ship.vx, y: this.ship.vy },
         angle: this.ship.angle,

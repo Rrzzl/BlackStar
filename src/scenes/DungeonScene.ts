@@ -4,7 +4,9 @@ import type { Loadout } from "@core/ship/Loadout";
 import { generateDungeon, type Dungeon } from "@core/procgen/DungeonGen";
 import { tileAt, type RoomDef } from "@core/procgen/RoomDef";
 import { drawLabel } from "@ui/Label";
+import { drawPauseOverlay } from "./PauseOverlay";
 import { PlanetLandingScene } from "./PlanetLandingScene";
+import { TitleScene } from "./TitleScene";
 import roomsData from "@content/rooms.json";
 
 const ROOMS = roomsData as RoomDef[];
@@ -15,6 +17,7 @@ export class DungeonScene extends Scene {
   private currentRoom: number;
   private playerX: number;
   private playerY: number;
+  private paused = false;
 
   constructor(
     readonly captain: CaptainState,
@@ -65,6 +68,11 @@ export class DungeonScene extends Scene {
   enter(_ctx: SceneContext): void {}
 
   update(ctx: SceneContext, dt: number): void {
+    if (ctx.input.wasKeyPressed("KeyP")) {
+      this.paused = !this.paused;
+      return;
+    }
+    if (this.paused) return;
     if (ctx.input.wasKeyPressed("Escape")) {
       ctx.changeScene(new PlanetLandingScene(this.captain, this.seed, this.loadout, this.planetId));
       return;
@@ -128,6 +136,13 @@ export class DungeonScene extends Scene {
     r.drawRect(offX + this.playerX - 5, offY + this.playerY - 5, 10, 10, this.captain.paint);
 
     drawLabel(r, `${room.name} — Room ${this.currentRoom + 1}/${this.dungeon.rooms.length}`, 10, 10, "#cfd8e8", 8);
-    drawLabel(r, "WASD move | ESC leave", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
+    drawLabel(r, "WASD move | P pause | ESC leave", r.internalWidth / 2, r.internalHeight - 10, "#506070", 6, "center");
+
+    if (this.paused) {
+      drawPauseOverlay(r, ctx.input, {
+        onResume: () => { this.paused = false; },
+        onQuit: () => ctx.changeScene(new TitleScene()),
+      });
+    }
   }
 }

@@ -7,7 +7,7 @@ import { center } from "@ui/Layout";
 
 export interface PauseActions {
   onResume(): void;
-  onSave(): void;
+  onSave?(): void;
   onQuit(): void;
 }
 
@@ -16,11 +16,13 @@ export function drawPauseOverlay(
   input: Input,
   actions: PauseActions,
 ): void {
+  const hasSave = typeof actions.onSave === "function";
+  const panelH = hasSave ? 120 : 100;
   r.drawRect(0, 0, r.internalWidth, r.internalHeight, "rgba(0,0,0,0.65)");
   const panel = center(
     { x: 0, y: 0, w: r.internalWidth, h: r.internalHeight },
     180,
-    120,
+    panelH,
   );
   drawPanel(r, panel);
   drawLabel(
@@ -39,17 +41,19 @@ export function drawPauseOverlay(
     "Resume",
     actions.onResume,
   );
+  if (hasSave) {
+    drawButton(
+      r,
+      input,
+      { x: panel.x + 20, y: panel.y + 55, w: panel.w - 40, h: 16 },
+      "Save",
+      actions.onSave!,
+    );
+  }
   drawButton(
     r,
     input,
-    { x: panel.x + 20, y: panel.y + 55, w: panel.w - 40, h: 16 },
-    "Save",
-    actions.onSave,
-  );
-  drawButton(
-    r,
-    input,
-    { x: panel.x + 20, y: panel.y + 75, w: panel.w - 40, h: 16 },
+    { x: panel.x + 20, y: panel.y + (hasSave ? 75 : 55), w: panel.w - 40, h: 16 },
     "Quit to Title",
     actions.onQuit,
   );

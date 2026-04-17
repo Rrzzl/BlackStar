@@ -7,7 +7,9 @@ import { SaveStore } from "@engine/Save";
 import { migrations } from "@core/world/migrations";
 import { Loadout } from "@core/ship/Loadout";
 import type { HullDef } from "@core/ship/HullDef";
+import type { ModuleDef } from "@core/ship/ModuleDef";
 import hullsData from "@content/hulls.json";
+import modulesData from "@content/modules.json";
 import type { SaveSnapshot } from "@core/world/SaveSnapshot";
 import { SpaceScene } from "./SpaceScene";
 import { StationScene } from "./StationScene";
@@ -16,14 +18,25 @@ import { DungeonScene } from "./DungeonScene";
 import { drawButton } from "@ui/Button";
 
 const HULLS = hullsData as unknown as HullDef[];
+const MODULES = modulesData as unknown as ModuleDef[];
+
+function rebuildLoadout(snap: SaveSnapshot): Loadout {
+  const hull = HULLS.find((h) => h.id === snap.ship.hullId) ?? HULLS.find((h) => h.id === "shrike")!;
+  const loadout = new Loadout(hull);
+  for (const modId of snap.ship.moduleIds) {
+    const mod = MODULES.find((m) => m.id === modId);
+    if (!mod) continue;
+    try { loadout.install(mod); } catch { /* slot full, skip */ }
+  }
+  return loadout;
+}
 
 function sceneFromSnapshot(snap: SaveSnapshot): Scene {
-  const shrike = HULLS.find((h) => h.id === "shrike")!;
-  const loadout = new Loadout(shrike);
+  const loadout = rebuildLoadout(snap);
   const { captain, seed } = snap;
   switch (snap.scene.type) {
     case "SpaceScene":
-      return new SpaceScene(captain, seed, loadout);
+      return new SpaceScene(captain, seed, loadout, undefined, snap);
     case "StationScene":
       return new StationScene(captain, seed, loadout, String(snap.scene.params?.stationId ?? ""));
     case "PlanetLandingScene":
