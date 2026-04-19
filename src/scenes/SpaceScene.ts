@@ -295,6 +295,15 @@ export class SpaceScene extends Scene {
         }
       }
     }
+
+    for (const e of this.enemies) {
+      if (e.archetype.contactDamage <= 0) continue;
+      if (circleHit({ x: e.x, y: e.y, r: e.archetype.radius }, { x: this.ship.x, y: this.ship.y, r: 4 })) {
+        this.playerHealth = applyDamage(this.playerHealth, e.archetype.contactDamage);
+        e.health.hp = 0;
+      }
+    }
+
     this.enemies = this.enemies.filter((e) => !isDead(e.health));
     if (isDead(this.playerHealth)) {
       ctx.changeScene(new TitleScene());
