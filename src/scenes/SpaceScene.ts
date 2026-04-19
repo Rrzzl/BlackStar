@@ -291,6 +291,7 @@ export class SpaceScene extends Scene {
       } else {
         if (circleHit({ x: p.x, y: p.y, r: 2 }, { x: this.ship.x, y: this.ship.y, r: 4 })) {
           this.playerHealth = applyDamage(this.playerHealth, p.damage);
+          this.camera.shake(Math.min(3, p.damage * 0.2), 0.2);
           this.projectiles.free(p);
         }
       }
@@ -300,6 +301,7 @@ export class SpaceScene extends Scene {
       if (e.archetype.contactDamage <= 0) continue;
       if (circleHit({ x: e.x, y: e.y, r: e.archetype.radius }, { x: this.ship.x, y: this.ship.y, r: 4 })) {
         this.playerHealth = applyDamage(this.playerHealth, e.archetype.contactDamage);
+        this.camera.shake(4, 0.3);
         e.health.hp = 0;
       }
     }
