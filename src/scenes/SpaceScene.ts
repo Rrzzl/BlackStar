@@ -18,8 +18,13 @@ import { TitleScene } from "./TitleScene";
 import { StationScene } from "./StationScene";
 import { PlanetLandingScene } from "./PlanetLandingScene";
 import type { Loadout } from "@core/ship/Loadout";
+import { ProjectilePool } from "@core/combat/ProjectilePool";
+import { makeWeaponRuntime, canFire, fire, tickCooldown, type WeaponRuntime, type WeaponDef } from "@core/combat/Weapon";
 import sectorData from "@content/sectors/grayline-reach.json";
 import goodsData from "@content/goods.json";
+import weaponsData from "@content/weapons.json";
+
+const WEAPONS = weaponsData as WeaponDef[];
 
 interface ShipKinematics {
   x: number;
@@ -48,6 +53,8 @@ export class SpaceScene extends Scene {
   private worldClockUnsubs: Array<() => void> = [];
   private rng: RNG;
   private camera = new Camera(0.15);
+  private projectiles = new ProjectilePool(64);
+  private playerWeapon: WeaponRuntime | null = null;
 
   private pendingSnapshot: SaveSnapshot | null = null;
 
@@ -98,6 +105,12 @@ export class SpaceScene extends Scene {
           target: toBody,
         });
       }
+    }
+
+    const firstWeaponModule = this.loadout.installed().find((m) => m.slot === "weapon");
+    if (firstWeaponModule) {
+      const def = WEAPONS.find((w) => w.id === firstWeaponModule.id);
+      if (def) this.playerWeapon = makeWeaponRuntime(def);
     }
   }
 
@@ -174,6 +187,22 @@ export class SpaceScene extends Scene {
     this.camera.follow(this.ship.x, this.ship.y);
     this.camera.tick(dt);
 
+    if (this.playerWeapon) tickCooldown(this.playerWeapon, dt);
+    this.projectiles.tick(dt);
+
+    if (this.playerWeapon && ctx.input.wasKeyPressed("Space")) {
+      const availablePower = 100;
+      if (canFire(this.playerWeapon, availablePower)) {
+        const spawn = fire(this.playerWeapon, {
+          x: this.ship.x,
+          y: this.ship.y,
+          angle: this.ship.angle,
+          ownerId: "player",
+        });
+        this.projectiles.spawn(spawn);
+      }
+    }
+
     for (const tv of this.traderVisuals) {
       const dx = tv.target.x - tv.x;
       const dy = tv.target.y - tv.y;
@@ -225,6 +254,14 @@ export class SpaceScene extends Scene {
       r.drawRect(sx - 1, sy - 1, 3, 3, "#8fd97a");
     }
 
+    for (const p of this.projectiles.active()) {
+      const sx = p.x - camX;
+      const sy = p.y - camY;
+      if (sx < -2 || sx > r.internalWidth + 2) continue;
+      if (sy < -2 || sy > r.internalHeight + 2) continue;
+      r.drawRect(sx - 1, sy - 1, 2, 2, "#f0e070");
+    }
+
     const shipSx = this.ship.x - camX;
     const shipSy = this.ship.y - camY;
     r.drawRect(shipSx - 2, shipSy - 2, 4, 4, this.captain.paint);
@@ -248,7 +285,7 @@ export class SpaceScene extends Scene {
       "#8a98b0",
       6,
     );
-    drawLabel(r, "WASD fly | P pause | F3 debug", 6, r.internalHeight - 10, "#506070", 6);
+    drawLabel(r, "WASD fly | SPACE fire | P pause | F3 debug", 6, r.internalHeight - 10, "#506070", 6);
 
     const near = this.nearestInteractable();
     if (near) {
