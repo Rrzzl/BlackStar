@@ -1,0 +1,5 @@
+[
+  { "id": "pulse_laser_i", "damage": 8, "projectileSpeed": 400, "rangeSeconds": 1.0, "fireIntervalSeconds": 0.5, "powerCost": 5 },
+  { "id": "autocannon_i",  "damage": 5, "projectileSpeed": 320, "rangeSeconds": 0.9, "fireIntervalSeconds": 0.18, "powerCost": 2 },
+  { "id": "flak_cannon_i", "damage": 14, "projectileSpeed": 260, "rangeSeconds": 0.6, "fireIntervalSeconds": 0.9, "powerCost": 12 }
+]
