@@ -1,0 +1,33 @@
+{
+  "archetypes": [
+    {
+      "id": "rusher",
+      "name": "Scrapfather Rusher",
+      "hp": 20,
+      "shield": 0,
+      "radius": 4,
+      "speed": 90,
+      "color": "#c04a4a",
+      "weapon": null,
+      "contactDamage": 12
+    },
+    {
+      "id": "shooter",
+      "name": "Scrapfather Shooter",
+      "hp": 30,
+      "shield": 10,
+      "radius": 5,
+      "speed": 45,
+      "color": "#b76030",
+      "weapon": "autocannon_i",
+      "contactDamage": 0,
+      "preferredRangePx": 180
+    }
+  ],
+  "spawns": [
+    { "archetype": "rusher",  "x": 1400, "y": 700, "id": "e1" },
+    { "archetype": "rusher",  "x": 1500, "y": 720, "id": "e2" },
+    { "archetype": "shooter", "x": 1700, "y": 900, "id": "e3" },
+    { "archetype": "shooter", "x": 900,  "y": 500, "id": "e4" }
+  ]
+}
