@@ -20,9 +20,12 @@ import { PlanetLandingScene } from "./PlanetLandingScene";
 import type { Loadout } from "@core/ship/Loadout";
 import { ProjectilePool } from "@core/combat/ProjectilePool";
 import { makeWeaponRuntime, canFire, fire, tickCooldown, type WeaponRuntime, type WeaponDef } from "@core/combat/Weapon";
-import { makeHealth } from "@core/combat/Health";
+import { makeHealth, applyDamage, isDead } from "@core/combat/Health";
+import type { Health } from "@core/combat/Health";
+import { circleHit } from "@core/combat/Hit";
 import { steerRusher, steerShooter } from "@core/combat/EnemyAI";
 import type { Enemy, EnemiesData } from "@core/combat/Enemy";
+import { makePlayerHealth } from "@core/player/PlayerHealth";
 import sectorData from "@content/sectors/grayline-reach.json";
 import goodsData from "@content/goods.json";
 import weaponsData from "@content/weapons.json";
@@ -61,6 +64,7 @@ export class SpaceScene extends Scene {
   private projectiles = new ProjectilePool(64);
   private playerWeapon: WeaponRuntime | null = null;
   private enemies: Enemy[] = [];
+  private playerHealth: Health = makePlayerHealth(0, 0);
 
   private pendingSnapshot: SaveSnapshot | null = null;
 
@@ -118,6 +122,15 @@ export class SpaceScene extends Scene {
       const def = WEAPONS.find((w) => w.id === firstWeaponModule.id);
       if (def) this.playerWeapon = makeWeaponRuntime(def);
     }
+
+    let hpBonus = 0;
+    let shieldBonus = 0;
+    for (const m of this.loadout.installed()) {
+      const s = m.stats as { hp?: number; shield?: number };
+      if (s.hp) hpBonus += s.hp;
+      if (s.shield) shieldBonus += s.shield;
+    }
+    this.playerHealth = makePlayerHealth(shieldBonus, hpBonus);
 
     for (const spawn of ENEMIES.spawns) {
       const arch = ENEMIES.archetypes.find((a) => a.id === spawn.archetype);
@@ -266,6 +279,28 @@ export class SpaceScene extends Scene {
       }
     }
 
+    for (const p of this.projectiles.active()) {
+      if (p.ownerId === "player") {
+        for (const e of this.enemies) {
+          if (circleHit({ x: p.x, y: p.y, r: 2 }, { x: e.x, y: e.y, r: e.archetype.radius })) {
+            e.health = applyDamage(e.health, p.damage);
+            this.projectiles.free(p);
+            break;
+          }
+        }
+      } else {
+        if (circleHit({ x: p.x, y: p.y, r: 2 }, { x: this.ship.x, y: this.ship.y, r: 4 })) {
+          this.playerHealth = applyDamage(this.playerHealth, p.damage);
+          this.projectiles.free(p);
+        }
+      }
+    }
+    this.enemies = this.enemies.filter((e) => !isDead(e.health));
+    if (isDead(this.playerHealth)) {
+      ctx.changeScene(new TitleScene());
+      return;
+    }
+
     ctx.worldClock.advance(dt);
   }
 
@@ -340,6 +375,12 @@ export class SpaceScene extends Scene {
       "#8a98b0",
       6,
     );
+    const hpPct = this.playerHealth.hp / this.playerHealth.maxHp;
+    const shPct = this.playerHealth.maxShield > 0 ? this.playerHealth.shield / this.playerHealth.maxShield : 0;
+    r.drawRect(6, 28, 80, 4, "#2a2630");
+    r.drawRect(6, 28, Math.round(80 * hpPct), 4, "#c04a4a");
+    r.drawRect(6, 34, 80, 3, "#2a2a3a");
+    r.drawRect(6, 34, Math.round(80 * shPct), 3, "#4a8cb9");
     drawLabel(r, "WASD fly | SPACE fire | P pause | F3 debug", 6, r.internalHeight - 10, "#506070", 6);
 
     const near = this.nearestInteractable();
