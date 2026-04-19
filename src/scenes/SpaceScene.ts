@@ -20,11 +20,16 @@ import { PlanetLandingScene } from "./PlanetLandingScene";
 import type { Loadout } from "@core/ship/Loadout";
 import { ProjectilePool } from "@core/combat/ProjectilePool";
 import { makeWeaponRuntime, canFire, fire, tickCooldown, type WeaponRuntime, type WeaponDef } from "@core/combat/Weapon";
+import { makeHealth } from "@core/combat/Health";
+import { steerRusher, steerShooter } from "@core/combat/EnemyAI";
+import type { Enemy, EnemiesData } from "@core/combat/Enemy";
 import sectorData from "@content/sectors/grayline-reach.json";
 import goodsData from "@content/goods.json";
 import weaponsData from "@content/weapons.json";
+import enemiesData from "@content/enemies.json";
 
 const WEAPONS = weaponsData as WeaponDef[];
+const ENEMIES = enemiesData as EnemiesData;
 
 interface ShipKinematics {
   x: number;
@@ -55,6 +60,7 @@ export class SpaceScene extends Scene {
   private camera = new Camera(0.15);
   private projectiles = new ProjectilePool(64);
   private playerWeapon: WeaponRuntime | null = null;
+  private enemies: Enemy[] = [];
 
   private pendingSnapshot: SaveSnapshot | null = null;
 
@@ -111,6 +117,27 @@ export class SpaceScene extends Scene {
     if (firstWeaponModule) {
       const def = WEAPONS.find((w) => w.id === firstWeaponModule.id);
       if (def) this.playerWeapon = makeWeaponRuntime(def);
+    }
+
+    for (const spawn of ENEMIES.spawns) {
+      const arch = ENEMIES.archetypes.find((a) => a.id === spawn.archetype);
+      if (!arch) continue;
+      let weaponRuntime: WeaponRuntime | null = null;
+      if (arch.weapon) {
+        const def = WEAPONS.find((w) => w.id === arch.weapon);
+        if (def) weaponRuntime = makeWeaponRuntime(def);
+      }
+      this.enemies.push({
+        id: spawn.id,
+        archetype: arch,
+        x: spawn.x,
+        y: spawn.y,
+        vx: 0,
+        vy: 0,
+        angle: 0,
+        health: makeHealth(arch.hp, arch.shield),
+        weapon: weaponRuntime,
+      });
     }
   }
 
@@ -220,6 +247,25 @@ export class SpaceScene extends Scene {
       tv.y += (dy / d) * tv.speed * dt;
     }
 
+    for (const e of this.enemies) {
+      const v = e.archetype.id === "rusher"
+        ? steerRusher(e, this.ship, e.archetype.speed)
+        : steerShooter(e, this.ship, e.archetype.speed, e.archetype.preferredRangePx ?? 180);
+      e.vx = v.vx;
+      e.vy = v.vy;
+      e.x += e.vx * dt;
+      e.y += e.vy * dt;
+      e.angle = Math.atan2(this.ship.y - e.y, this.ship.x - e.x);
+      if (e.weapon) {
+        tickCooldown(e.weapon, dt);
+        const d = Math.hypot(this.ship.x - e.x, this.ship.y - e.y);
+        if (d < 260 && canFire(e.weapon, 100)) {
+          const spawn = fire(e.weapon, { x: e.x, y: e.y, angle: e.angle, ownerId: e.id });
+          this.projectiles.spawn(spawn);
+        }
+      }
+    }
+
     ctx.worldClock.advance(dt);
   }
 
@@ -252,6 +298,15 @@ export class SpaceScene extends Scene {
       if (sx < -4 || sx > r.internalWidth + 4) continue;
       if (sy < -4 || sy > r.internalHeight + 4) continue;
       r.drawRect(sx - 1, sy - 1, 3, 3, "#8fd97a");
+    }
+
+    for (const e of this.enemies) {
+      const sx = e.x - camX;
+      const sy = e.y - camY;
+      if (sx < -e.archetype.radius * 2 || sx > r.internalWidth + e.archetype.radius * 2) continue;
+      if (sy < -e.archetype.radius * 2 || sy > r.internalHeight + e.archetype.radius * 2) continue;
+      const rr = e.archetype.radius;
+      r.drawRect(sx - rr, sy - rr, rr * 2, rr * 2, e.archetype.color);
     }
 
     for (const p of this.projectiles.active()) {
