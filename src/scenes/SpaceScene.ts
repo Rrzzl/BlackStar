@@ -66,6 +66,7 @@ export class SpaceScene extends Scene {
   private enemies: Enemy[] = [];
   private playerHealth: Health = makePlayerHealth(0, 0);
   private damageFlash = 0;
+  private flashes: Array<{ x: number; y: number; ttl: number; color: string }> = [];
 
   private pendingSnapshot: SaveSnapshot | null = null;
 
@@ -230,6 +231,8 @@ export class SpaceScene extends Scene {
 
     if (this.playerWeapon) tickCooldown(this.playerWeapon, dt);
     this.projectiles.tick(dt);
+    for (const f of this.flashes) f.ttl -= dt;
+    this.flashes = this.flashes.filter((f) => f.ttl > 0);
 
     if (this.playerWeapon && ctx.input.wasKeyPressed("Space")) {
       const availablePower = 100;
@@ -241,6 +244,12 @@ export class SpaceScene extends Scene {
           ownerId: "player",
         });
         this.projectiles.spawn(spawn);
+        this.flashes.push({
+          x: this.ship.x + Math.cos(this.ship.angle) * 6,
+          y: this.ship.y + Math.sin(this.ship.angle) * 6,
+          ttl: 0.06,
+          color: "#ffffcc",
+        });
       }
     }
 
@@ -285,6 +294,7 @@ export class SpaceScene extends Scene {
         for (const e of this.enemies) {
           if (circleHit({ x: p.x, y: p.y, r: 2 }, { x: e.x, y: e.y, r: e.archetype.radius })) {
             e.health = applyDamage(e.health, p.damage);
+            this.flashes.push({ x: p.x, y: p.y, ttl: 0.08, color: "#ffffff" });
             this.projectiles.free(p);
             break;
           }
@@ -294,6 +304,7 @@ export class SpaceScene extends Scene {
           this.playerHealth = applyDamage(this.playerHealth, p.damage);
           this.camera.shake(Math.min(3, p.damage * 0.2), 0.2);
           this.damageFlash = 1;
+          this.flashes.push({ x: p.x, y: p.y, ttl: 0.08, color: "#ffa060" });
           this.projectiles.free(p);
         }
       }
@@ -366,6 +377,12 @@ export class SpaceScene extends Scene {
       if (sx < -2 || sx > r.internalWidth + 2) continue;
       if (sy < -2 || sy > r.internalHeight + 2) continue;
       r.drawRect(sx - 1, sy - 1, 2, 2, "#f0e070");
+    }
+
+    for (const f of this.flashes) {
+      const sx = f.x - camX;
+      const sy = f.y - camY;
+      r.drawRect(sx - 2, sy - 2, 4, 4, f.color);
     }
 
     const shipSx = this.ship.x - camX;
