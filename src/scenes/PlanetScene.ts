@@ -13,6 +13,7 @@ import {
   type ControllerConfig,
 } from "@core/platformer/Controller";
 import entryRoom from "@content/planets/kepler-7b/entry.tmj.json";
+import { drawLabel } from "@ui/Label";
 
 const PLAYER_W = 10;
 const PLAYER_H = 14;
@@ -134,5 +135,8 @@ export class PlanetScene extends Scene {
     }
 
     r.drawRect(this.body.x - camX, this.body.y - camY, PLAYER_W, PLAYER_H, this.captain.paint);
+
+    drawLabel(ctx.renderer, `KEPLER-7B — ENTRY`, 6, 6, "#cfd8e8", 8);
+    drawLabel(ctx.renderer, "A/D run · SPACE jump · ESC leave", ctx.renderer.internalWidth / 2, ctx.renderer.internalHeight - 10, "#506070", 6, "center");
   }
 }
