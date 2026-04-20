@@ -65,6 +65,7 @@ export class SpaceScene extends Scene {
   private playerWeapon: WeaponRuntime | null = null;
   private enemies: Enemy[] = [];
   private playerHealth: Health = makePlayerHealth(0, 0);
+  private damageFlash = 0;
 
   private pendingSnapshot: SaveSnapshot | null = null;
 
@@ -292,6 +293,7 @@ export class SpaceScene extends Scene {
         if (circleHit({ x: p.x, y: p.y, r: 2 }, { x: this.ship.x, y: this.ship.y, r: 4 })) {
           this.playerHealth = applyDamage(this.playerHealth, p.damage);
           this.camera.shake(Math.min(3, p.damage * 0.2), 0.2);
+          this.damageFlash = 1;
           this.projectiles.free(p);
         }
       }
@@ -302,6 +304,7 @@ export class SpaceScene extends Scene {
       if (circleHit({ x: e.x, y: e.y, r: e.archetype.radius }, { x: this.ship.x, y: this.ship.y, r: 4 })) {
         this.playerHealth = applyDamage(this.playerHealth, e.archetype.contactDamage);
         this.camera.shake(4, 0.3);
+        this.damageFlash = 1;
         e.health.hp = 0;
       }
     }
@@ -311,6 +314,8 @@ export class SpaceScene extends Scene {
       ctx.changeScene(new TitleScene());
       return;
     }
+
+    this.damageFlash = Math.max(0, this.damageFlash - dt * 5);
 
     ctx.worldClock.advance(dt);
   }
@@ -422,6 +427,10 @@ export class SpaceScene extends Scene {
         onCancel: () => { this.savingSlot = false; },
         title: "SAVE TO SLOT",
       });
+    }
+
+    if (this.damageFlash > 0) {
+      r.drawRect(0, 0, r.internalWidth, r.internalHeight, `rgba(192,32,32,${(this.damageFlash * 0.35).toFixed(3)})`);
     }
 
     this.debug.render(r);
