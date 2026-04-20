@@ -14,7 +14,7 @@ import type { SaveSnapshot } from "@core/world/SaveSnapshot";
 import { SpaceScene } from "./SpaceScene";
 import { StationScene } from "./StationScene";
 import { PlanetLandingScene } from "./PlanetLandingScene";
-import { DungeonScene } from "./DungeonScene";
+import { PlanetScene } from "./PlanetScene";
 import { drawButton } from "@ui/Button";
 
 const HULLS = hullsData as unknown as HullDef[];
@@ -41,8 +41,8 @@ function sceneFromSnapshot(snap: SaveSnapshot): Scene {
       return new StationScene(captain, seed, loadout, String(snap.scene.params?.stationId ?? ""));
     case "PlanetLandingScene":
       return new PlanetLandingScene(captain, seed, loadout, String(snap.scene.params?.planetId ?? ""));
-    case "DungeonScene":
-      return new DungeonScene(captain, seed, loadout, String(snap.scene.params?.planetId ?? ""));
+    case "PlanetScene":
+      return new PlanetScene(captain, seed, loadout, String(snap.scene.params?.planetId ?? ""));
     default:
       return new SpaceScene(captain, seed, loadout);
   }

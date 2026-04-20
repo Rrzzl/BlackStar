@@ -5,7 +5,7 @@ import { drawPanel } from "@ui/Panel";
 import { drawLabel } from "@ui/Label";
 import { drawButton } from "@ui/Button";
 import { SpaceScene } from "./SpaceScene";
-import { DungeonScene } from "./DungeonScene";
+import { PlanetScene } from "./PlanetScene";
 
 export class PlanetLandingScene extends Scene {
   constructor(
@@ -39,7 +39,7 @@ export class PlanetLandingScene extends Scene {
 
     if (this.planetId === "kepler-7b") {
       drawButton(r, ctx.input, { x: btnX, y: by, w: btnW, h: btnH }, "Enter Alien Ruin", () => {
-        ctx.changeScene(new DungeonScene(this.captain, this.seed, this.loadout, this.planetId));
+        ctx.changeScene(new PlanetScene(this.captain, this.seed, this.loadout, this.planetId));
       });
       by += 24;
     } else {
