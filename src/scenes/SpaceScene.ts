@@ -191,7 +191,11 @@ export class SpaceScene extends Scene {
     this.debug.tick();
     if (ctx.input.wasKeyPressed("KeyP")) this.paused = !this.paused;
     if (ctx.input.wasKeyPressed("F3")) this.debug.enabled = !this.debug.enabled;
-    if (this.paused) return;
+    if (this.paused) {
+      if (ctx.input.isKeyDown("KeyA")) this.ship.angle -= 1.5 * dt;
+      if (ctx.input.isKeyDown("KeyD")) this.ship.angle += 1.5 * dt;
+      return;
+    }
 
     if (ctx.input.wasKeyPressed("KeyF")) {
       const target = this.nearestInteractable();
@@ -391,6 +395,15 @@ export class SpaceScene extends Scene {
     const nx = Math.cos(this.ship.angle) * 4;
     const ny = Math.sin(this.ship.angle) * 4;
     r.drawRect(shipSx + nx - 0.5, shipSy + ny - 0.5, 1, 1, "#ffffff");
+
+    if (this.paused && this.playerWeapon) {
+      const range = this.playerWeapon.def.projectileSpeed * this.playerWeapon.def.rangeSeconds;
+      const ex = shipSx + Math.cos(this.ship.angle) * range;
+      const ey = shipSy + Math.sin(this.ship.angle) * range;
+      for (let t = 0; t <= 1; t += 0.05) {
+        r.drawRect(Math.round(shipSx + (ex - shipSx) * t) - 0.5, Math.round(shipSy + (ey - shipSy) * t) - 0.5, 1, 1, "rgba(240,224,112,0.5)");
+      }
+    }
 
     drawLabel(
       r,
