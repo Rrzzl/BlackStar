@@ -1,7 +1,19 @@
 import type { CaptainState } from '@core/player/Captain';
 import type { PlayerShipState } from '@core/player/PlayerShip';
 
-export const CURRENT_SAVE_VERSION = 2;
+export const CURRENT_SAVE_VERSION = 3;
+
+export interface SerializedEnemy {
+  id: string;
+  archetypeId: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  hp: number;
+  shield: number;
+  weaponCooldown: number;
+}
 
 export interface SaveSnapshot {
   version: number;
@@ -14,6 +26,7 @@ export interface SaveSnapshot {
     traders: SerializedTrader[];
     stockpiles: SerializedStockpile[];
     playerBody: string | null;
+    enemies: SerializedEnemy[];
   };
   inventory: { items: Array<{ id: string; qty: number }> };
   factions: Record<string, { rep: number }>;

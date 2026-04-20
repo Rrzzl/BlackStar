@@ -30,7 +30,7 @@ function fixture(version: number): Record<string, unknown> {
       credits: 500,
       cargo: [],
     },
-    sector: { id: 'grayline-reach', traders: [], stockpiles: [] },
+    sector: { id: 'grayline-reach', traders: [], stockpiles: [], playerBody: null, enemies: [] },
     inventory: { items: [] },
     factions: { free_worlds: { rep: 0 }, scrapfather: { rep: 0 } },
     quests: { active: [], completed: [] },
@@ -68,10 +68,18 @@ describe('SaveSnapshot', () => {
           return { ...raw, sector, version: 2 };
         },
       },
+      {
+        from: 2,
+        to: 3,
+        apply: (raw) => {
+          const sector = { ...(raw.sector as Record<string, unknown>), enemies: [] };
+          return { ...raw, sector, version: 3 };
+        },
+      },
     ];
 
     const migrated = migrate(v0, migrations);
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.captain.deaths).toBe(0);
   });
 

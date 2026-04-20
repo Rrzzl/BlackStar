@@ -13,4 +13,16 @@ export const migrations: readonly Migration[] = [
       };
     },
   },
+  {
+    from: 2,
+    to: 3,
+    apply(raw: Record<string, unknown>): Record<string, unknown> {
+      const sector = raw.sector as Record<string, unknown>;
+      return {
+        ...raw,
+        version: 3,
+        sector: { ...sector, enemies: [] },
+      };
+    },
+  },
 ];

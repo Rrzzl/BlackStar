@@ -115,6 +115,7 @@ export class StationScene extends Scene {
         playerBody: this.stationId,
         traders: [],
         stockpiles: [],
+        enemies: [],
       },
       inventory: { items: [] },
       factions: { free_worlds: { rep: 0 }, scrapfather: { rep: 0 } },

@@ -500,8 +500,8 @@ export class SpaceScene extends Scene {
         position: { x: this.ship.x, y: this.ship.y },
         velocity: { x: this.ship.vx, y: this.ship.vy },
         angle: this.ship.angle,
-        hp: 100,
-        shield: 50,
+        hp: this.playerHealth.hp,
+        shield: this.playerHealth.shield,
         credits: 500,
         cargo: [],
       },
@@ -524,6 +524,17 @@ export class SpaceScene extends Scene {
             equilibrium: sp.equilibrium,
           })),
         ),
+        enemies: this.enemies.map((e) => ({
+          id: e.id,
+          archetypeId: e.archetype.id,
+          x: e.x,
+          y: e.y,
+          vx: e.vx,
+          vy: e.vy,
+          hp: e.health.hp,
+          shield: e.health.shield,
+          weaponCooldown: e.weapon?.cooldown ?? 0,
+        })),
       },
       inventory: { items: [] },
       factions: { free_worlds: { rep: 0 }, scrapfather: { rep: 0 } },
@@ -552,6 +563,35 @@ export class SpaceScene extends Scene {
         tv.y = t.position.y;
       }
     }
+
+    this.playerHealth.hp = snap.ship.hp;
+    this.playerHealth.shield = snap.ship.shield;
+
+    this.enemies = [];
+    for (const se of snap.sector.enemies) {
+      const arch = ENEMIES.archetypes.find((a) => a.id === se.archetypeId);
+      if (!arch) continue;
+      let weaponRuntime: WeaponRuntime | null = null;
+      if (arch.weapon) {
+        const def = WEAPONS.find((w) => w.id === arch.weapon);
+        if (def) {
+          weaponRuntime = makeWeaponRuntime(def);
+          weaponRuntime.cooldown = se.weaponCooldown;
+        }
+      }
+      this.enemies.push({
+        id: se.id,
+        archetype: arch,
+        x: se.x,
+        y: se.y,
+        vx: se.vx,
+        vy: se.vy,
+        angle: 0,
+        health: { hp: se.hp, maxHp: arch.hp, shield: se.shield, maxShield: arch.shield },
+        weapon: weaponRuntime,
+      });
+    }
+
     this.camera.snap(this.ship.x, this.ship.y);
   }
 }
