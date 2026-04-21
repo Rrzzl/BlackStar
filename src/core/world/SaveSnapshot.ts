@@ -1,7 +1,7 @@
 import type { CaptainState } from '@core/player/Captain';
 import type { PlayerShipState } from '@core/player/PlayerShip';
 
-export const CURRENT_SAVE_VERSION = 3;
+export const CURRENT_SAVE_VERSION = 4;
 
 export interface SerializedEnemy {
   id: string;

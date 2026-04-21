@@ -25,4 +25,18 @@ export const migrations: readonly Migration[] = [
       };
     },
   },
+  {
+    from: 3,
+    to: 4,
+    apply(raw: Record<string, unknown>): Record<string, unknown> {
+      const scene = (raw.scene as Record<string, unknown> | undefined) ?? {};
+      const type = scene.type;
+      const newType = type === "DungeonScene" ? "PlanetScene" : type;
+      return {
+        ...raw,
+        version: 4,
+        scene: { ...scene, type: newType },
+      };
+    },
+  },
 ];

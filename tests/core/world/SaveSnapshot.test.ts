@@ -76,10 +76,15 @@ describe('SaveSnapshot', () => {
           return { ...raw, sector, version: 3 };
         },
       },
+      {
+        from: 3,
+        to: 4,
+        apply: (raw) => ({ ...raw, version: 4 }),
+      },
     ];
 
     const migrated = migrate(v0, migrations);
-    expect(migrated.version).toBe(3);
+    expect(migrated.version).toBe(4);
     expect(migrated.captain.deaths).toBe(0);
   });
 

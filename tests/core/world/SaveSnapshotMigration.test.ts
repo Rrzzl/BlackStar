@@ -3,11 +3,11 @@ import { migrate, CURRENT_SAVE_VERSION } from "@core/world/SaveSnapshot";
 import { migrations } from "@core/world/migrations";
 
 describe("SaveSnapshot migrations", () => {
-  it("CURRENT_SAVE_VERSION is 3", () => {
-    expect(CURRENT_SAVE_VERSION).toBe(3);
+  it("CURRENT_SAVE_VERSION is 4", () => {
+    expect(CURRENT_SAVE_VERSION).toBe(4);
   });
 
-  it("migrates a v1 save to v3 adding playerBody and enemies", () => {
+  it("migrates a v1 save to v4 adding playerBody, enemies, and renaming DungeonScene", () => {
     const v1: Record<string, unknown> = {
       version: 1,
       seed: 42,
@@ -22,12 +22,12 @@ describe("SaveSnapshot migrations", () => {
       scene: { type: "SpaceScene" },
     };
     const result = migrate(v1, migrations);
-    expect(result.version).toBe(3);
+    expect(result.version).toBe(4);
     expect(result.sector.playerBody).toBeNull();
     expect(result.sector.enemies).toEqual([]);
   });
 
-  it("migrates a v2 save to v3 adding empty enemies array", () => {
+  it("migrates a v2 save to v4 adding empty enemies array", () => {
     const v2: Record<string, unknown> = {
       version: 2,
       seed: 42,
@@ -42,12 +42,32 @@ describe("SaveSnapshot migrations", () => {
       scene: { type: "StationScene", params: { stationId: "the-crossing" } },
     };
     const result = migrate(v2, migrations);
-    expect(result.version).toBe(3);
+    expect(result.version).toBe(4);
     expect(result.sector.playerBody).toBe("the-crossing");
     expect(result.sector.enemies).toEqual([]);
   });
 
-  it("passes a v3 save through unchanged", () => {
+  it("renames DungeonScene scene type to PlanetScene on v3 → v4 migration", () => {
+    const v3: Record<string, unknown> = {
+      version: 3,
+      seed: 42,
+      worldClock: 100,
+      captain: { name: "Rook", species: "human", klass: "gunslinger", paint: "#b94a3a", createdAt: 0, deaths: 0 },
+      ship: { hullId: "shrike", moduleIds: [], position: { x: 1, y: 2 }, velocity: { x: 0, y: 0 }, angle: 0, hp: 100, shield: 50, credits: 500, cargo: [] },
+      sector: { id: "grayline-reach", traders: [], stockpiles: [], playerBody: null, enemies: [] },
+      inventory: { items: [] },
+      factions: { free_worlds: { rep: 0 }, scrapfather: { rep: 0 } },
+      quests: { active: [], completed: [] },
+      outposts: {},
+      scene: { type: "DungeonScene", params: { planetId: "kepler-7b" } },
+    };
+    const result = migrate(v3, migrations);
+    expect(result.version).toBe(4);
+    expect(result.scene.type).toBe("PlanetScene");
+    expect(result.scene.params).toEqual({ planetId: "kepler-7b" });
+  });
+
+  it("passes a v3 save with non-DungeonScene scene type through unchanged in scene.type", () => {
     const v3: Record<string, unknown> = {
       version: 3,
       seed: 42,
@@ -62,7 +82,8 @@ describe("SaveSnapshot migrations", () => {
       scene: { type: "SpaceScene" },
     };
     const result = migrate(v3, migrations);
-    expect(result.version).toBe(3);
+    expect(result.version).toBe(4);
     expect(result.sector.enemies).toEqual([]);
+    expect(result.scene.type).toBe("SpaceScene");
   });
 });

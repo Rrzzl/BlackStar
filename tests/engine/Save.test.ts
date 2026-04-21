@@ -4,7 +4,7 @@ import type { SaveSnapshot, Migration } from '@core/world/SaveSnapshot';
 
 function makeSnap(): SaveSnapshot {
   return {
-    version: 3,
+    version: 4,
     seed: 1,
     worldClock: 0,
     captain: {
@@ -75,9 +75,10 @@ describe('SaveStore', () => {
       { from: 0, to: 1, apply: (raw) => ({ ...raw, version: 1 }) },
       { from: 1, to: 2, apply: (raw) => ({ ...raw, version: 2 }) },
       { from: 2, to: 3, apply: (raw) => ({ ...raw, version: 3 }) },
+      { from: 3, to: 4, apply: (raw) => ({ ...raw, version: 4 }) },
     ];
     const store = new SaveStore('slotA', migrations);
     const loaded = store.load();
-    expect(loaded?.version).toBe(3);
+    expect(loaded?.version).toBe(4);
   });
 });
