@@ -1,0 +1,432 @@
+================================================================================
+ NOTE (2026-04-20): Story, scope, and milestone plan have been superseded.
+ Authoritative story source:     docs/production/world-bible-v5.md
+ What-to-work-on-next compass:   docs/compass.md
+ Visual style guide:             docs/style-guide.md
+
+ Engine state, folder map, architectural rules, and code-level invariants
+ in the sections below remain accurate.
+================================================================================
+
+================================================================================
+ BLACK STAR — FULL PROJECT HANDOFF
+ Snapshot date: 2026-04-20
+ Current tag:   m3a-complete
+================================================================================
+
+PURPOSE OF THIS DOCUMENT
+------------------------
+A top-to-bottom, self-contained brief. Any fresh session (human or agent) should
+be able to read this file and know:
+  • what we're building and why
+  • the full tech stack and folder layout
+  • every milestone shipped to date
+  • the non-negotiable architectural rules
+  • exactly where we are right now
+  • what blocks the next milestone and how to pick it up
+
+Pair this file with the per-milestone retros under docs/production/retros/ for
+full detail. This brief summarizes; the retros are authoritative on specifics.
+
+
+================================================================================
+ 1. THE GAME
+================================================================================
+
+Black Star is a 2D game with two halves stitched into one shell.
+
+  • SPACE (built)    — top-down dogfight combat, trade, exploration between
+                       stations and planets. Seeded procedural sector. You pilot
+                       a ship, fight enemies, dock, trade, save, die.
+  • PLANET (rebuilding) — side-scrolling metroidvania in the Blasphemous /
+                       Hollow Knight lineage. Hand-crafted rooms, gravity +
+                       jump + melee, gothic-alien ruin tone, souls-like
+                       difficulty. Was originally a top-down procedural dungeon
+                       — pivoted away from that in M3a.
+
+Scope is AAA ambition on indie execution — systemic depth, legacy mechanics,
+Decay Clock as long-term pressure, Black Star as a scripted multi-year event.
+The production brief is "treat this like a studio, not a weekend prototype."
+
+Loop (target):
+  1. In space: fight, trade, earn credits, upgrade.
+  2. Land on planets: descend into ruins, explore, fight, recover lore/loot.
+  3. Die: permadeath with legacy — estate passes to the next captain.
+  4. Over time: Decay Clock degrades the galaxy; the Black Star event fires
+     and reshapes the map. Your legacy is how you prepared for it.
+
+Only #1 and the shell of #2 are built as of m3a-complete.
+
+
+================================================================================
+ 2. TECH STACK
+================================================================================
+
+  • TypeScript (strict: noUncheckedIndexedAccess, exactOptionalPropertyTypes)
+  • Vite 5 for dev server + production build
+  • Canvas 2D — no WebGL, no shaders, no Three.js. Internal resolution 640×360.
+  • Vitest for unit tests. No Playwright, no Cypress.
+  • ESLint with a zero-warning policy.
+  • No runtime dependencies except what ships in-browser. No Node server.
+  • Save format: JSON in localStorage, versioned, migrated forward on load.
+
+Commands (run from project root):
+
+  npm run dev       Vite dev server on http://localhost:5173/
+  npm run typecheck tsc --noEmit
+  npm run lint      ESLint over src and tests
+  npm run test:run  Vitest one-shot
+  npm run build     typecheck + Vite build
+
+Path aliases (configured in both tsconfig.json and vite.config.ts):
+
+  @engine/   core engine services (GameLoop, Scene, Input, Renderer, Save ...)
+  @core/     pure-logic game subsystems (economy, combat, platformer, RNG ...)
+  @scenes/   scene classes (SpaceScene, PlanetScene, TitleScene ...)
+  @ui/       UI primitives (Label, Button, Panel, Bar, List ...)
+  @content/  JSON content (hulls, modules, weapons, rooms, .tmj.json files)
+
+
+================================================================================
+ 3. FOLDER MAP (as of m3a-complete)
+================================================================================
+
+  src/
+    main.ts                         entry point — wires GameLoop + first scene
+    engine/                         engine services
+      GameLoop.ts                   fixed timestep + render interpolation
+      Scene.ts                      Scene abstract class + SceneContext
+      Input.ts                      keyboard state, wasKeyPressed, isKeyDown
+      Renderer.ts                   internal-res canvas, drawRect, drawText
+      Assets.ts                     deferred asset loader
+      Audio.ts                      SFX / music stubs
+      Save.ts                       SaveStore w/ migration pipeline
+      Camera.ts                     screen-shake + follow (space only)
+      Physics.ts                    2D vector physics for ships
+      EventBus.ts                   pub/sub
+      DebugOverlay.ts               F3 panel
+      Vec2.ts                       vector math helpers
+    core/                           PURE LOGIC — no engine/scene/ui imports
+      RNG.ts                        seeded Mulberry32
+      combat/                       projectiles, weapons, enemy AI, health
+      economy/                      traders, pricing, stockpiles, goods
+      platformer/                   TileMap, Physics2D, Collision, Controller,
+                                    TiledLoader, types   [NEW in M3a]
+      player/                       Captain, PlayerShip, PlayerHealth
+      ship/                         HullDef, ModuleDef, Loadout, PowerBudget
+      world/                        WorldClock, Sector, SaveSnapshot, migrations
+    scenes/                         per-screen game flow
+      TitleScene.ts                 title + save-slot picker
+      CharacterCreationScene.ts     captain creation
+      SpaceScene.ts                 in-flight combat / trade / explore
+      StationScene.ts               docked UI
+      ShipLoadoutScene.ts           module fitting
+      PlanetLandingScene.ts         planet approach screen
+      PlanetScene.ts                side-scrolling surface   [NEW in M3a]
+      LoadingScene.ts               splash between scenes
+      PauseOverlay.ts               shared pause UI
+      SaveSlotPickerOverlay.ts     3-slot save picker
+    ui/                             UI primitives
+      Label, Button, Panel, Bar, List, Layout
+    content/                        JSON data
+      hulls.json, modules.json, weapons.json, enemies.json, traders.json,
+      starter_inventory.json, stations.json, player.json
+      planets/
+        kepler-7b/
+          entry.tmj.json            first hand-authored platformer room
+
+  tests/                            mirror of src, vitest
+  docs/
+    production/
+      01-roadmap.md                 long-range scope
+      02-milestones.md              milestone index
+      03-risk-register.md           rolling risks
+      04-vertical-slice.md          what proves the game works
+      m3a-handoff.md                fresh-chat opener for executing M3a plan
+      BLACK-STAR-HANDOFF.txt        THIS FILE
+      retros/                       one retro + one playthrough script per ms
+
+
+================================================================================
+ 4. MILESTONES — SHIPPED
+================================================================================
+
+Each milestone has a tag (e.g. m2c-complete) and a retro in docs/production/retros/.
+
+  M1  — ENGINE FOUNDATIONS
+        GameLoop, Scene, Input, Renderer, Assets, Save, Audio, Camera,
+        Physics, EventBus, Vec2. The skeleton.
+
+  M2a — ECONOMY
+        Trader + Pricing + Stockpile. Ship Loadout + PowerBudget. Save v1.
+        Ships can fit modules; stations stock goods; traders run routes.
+        Tag: (pre-m2b commits carry M2a; no separate tag)
+
+  M2b — SURFACES                                                        [tag: m2b-complete]
+        StationScene, ShipLoadoutScene, PlanetLandingScene. 3-slot save
+        picker. Save v2 adds sector.playerBody so reloads remember docking.
+
+  M2c — LOOPS (SPACE COMBAT)                                            [tag: m2c-complete]
+        Combat primitives (Health, ProjectilePool, Hit). Weapons w/ power
+        gating + cooldown. 2 enemy archetypes (rusher, shooter) w/ pure
+        steering. Projectile ↔ enemy/player damage. Camera shake, damage
+        flash, muzzle flashes. Tactical pause (KeyP) with trajectory
+        prediction. Save v3 persists hp/shield/enemies. Determinism test
+        locks RNG + AI purity.
+
+  M3a — PLANET FOUNDATION                                               [tag: m3a-complete]
+        Demolished obsolete top-down DungeonScene/DungeonGen/RoomDef/
+        rooms.json. Built pure-logic 2D platformer substrate in
+        src/core/platformer/: TileMap, Physics2D (gravity + terminal
+        velocity), swept AABB-vs-tilemap Collision, Controller (run,
+        coyote time, jump buffer, facing), TiledLoader. Adopted
+        .tmj.json (Tiled JSON) as the canonical level format. Hand-
+        authored first room: src/content/planets/kepler-7b/entry.tmj.json
+        (20×12, two platforms, spawn + exit). New PlanetScene wires the
+        substrate into the planet-landing flow. Save v4 renames the
+        DungeonScene scene type to PlanetScene via v3→v4 migration.
+
+Headless gate numbers at m3a-complete:
+  • 115 tests passing across 25 files
+  • typecheck + lint clean
+  • 43.36 kB js / 14.15 kB gzip / 55 modules / 348 ms build
+
+
+================================================================================
+ 5. NON-NEGOTIABLE RULES (violating any of these breaks the architecture)
+================================================================================
+
+ARCHITECTURE
+
+  • Layering invariant: src/core/ NEVER imports from @engine/, @scenes/,
+    or @ui/. Verify with:
+        grep -rn "@engine\|@scenes\|@ui" src/core
+    Must be empty.
+
+  • Strict TS: noUncheckedIndexedAccess + exactOptionalPropertyTypes.
+    Array accesses need `!` or null-checks. Optional properties are not
+    "allowed undefined" — you must be explicit.
+
+  • Seeded RNG only in authoritative paths. Math.random() is banned in
+    src/core/ and all gameplay paths. Cosmetic jitter (camera shake) is
+    the only allowed exception.
+
+  • Save format is versioned. Every schema change requires a v(n)→v(n+1)
+    migration and updates to Save.test.ts, SaveSnapshot.test.ts, and
+    SaveSnapshotMigration.test.ts.
+
+  • Scene lifecycle: enter(ctx) → update(ctx, dt) → render(ctx, alpha)
+    → exit(ctx). Scenes can import from @engine/, @core/, @ui/,
+    @content/. Never the other way around.
+
+  • SceneContext services available: input, renderer, assets, audio,
+    saveStore, worldClock, changeScene. Do not punch through to globals.
+
+CONTENT FORMATS
+
+  • Level format is .tmj.json (Tiled JSON with .json appended so Vite's
+    native JSON handling works with zero config). NEVER bare .tmj.
+
+  • Tile layer must be named "collision". Object layer must be named
+    "objects". Object types used so far: "player_spawn", "exit".
+    (Future: "hazard", "save_point", trigger volumes.)
+
+  • Content JSON lives in src/content/. Gameplay code imports via
+    @content/... — not via fs, not via fetch.
+
+INPUT
+
+  • Pause key is KeyP everywhere. Never F10 (browsers capture it).
+  • ESC leaves the current sub-scene back to its parent (station → space,
+    planet-surface → planet-landing, etc.).
+  • Planet surface controls: A/D run, SPACE (or W) jump.
+  • Space combat controls: arrow keys / WASD fly, SPACE fire, P pause.
+
+COMMITS
+
+  • Identity: `git -c user.email="dev@blackstar.local"
+                  -c user.name="Black Star Dev" commit -m "..."`.
+    Bot identity — no personal author, no Co-Authored-By trailers,
+    no 🤖 Generated with Claude Code lines, no emojis.
+
+  • No --no-verify. No --amend. If a hook fails, fix the cause and
+    create a new commit.
+
+  • Never stage .claude/settings.json in gameplay commits.
+
+  • Conventional-commit style prefixes: feat / fix / refactor /
+    content / test / docs / plan. Scope in parens: feat(planet): ...
+
+
+================================================================================
+ 6. CURRENT STATE (as of m3a-complete / 2026-04-20)
+================================================================================
+
+Branch:       main
+HEAD commit:  fa23a3b docs(m3a): retrospective and M3b prerequisites
+Latest tag:   m3a-complete
+
+Working tree:
+  • .claude/settings.json is dirty but UNRELATED to gameplay work.
+    Leave it alone unless the user explicitly asks about it.
+
+Gate:
+  • typecheck clean
+  • lint clean
+  • 115/115 tests across 25 files (vitest run)
+  • build: 43.36 kB js / 14.15 kB gzip / 55 modules / 348 ms
+
+Outstanding item before M3b can start:
+  • Manual browser playthrough against
+    docs/production/retros/m3a-playthrough-script.md
+  • All 12 steps, including coyote + buffer + exit-touch + ESC flow.
+  • Tuning numbers (runSpeed=120, jumpVelocity=-320, gravity=900,
+    terminalVelocity=600, coyoteTimeSec=0.1, jumpBufferSec=0.12) are
+    first-draft. Expect to tune them against the playthrough.
+
+Three design-level decisions locked in during M3a:
+  1. Collision is swept, X-axis then Y-axis independent. Point-probe
+     at destination was the plan's original — it tunnelled through
+     walls at any real velocity. Shipped code walks tile cells along
+     the sweep path and stops at the first solid.
+  2. Controller owns velocity every frame. Scene does
+     `controller.vy = body.vy` before update, `body.vy = controller.vy`
+     after. No Math.max / Math.min merging (the plan's original had
+     Math.max which silently discarded mid-air jump impulses).
+  3. Coyote and jump buffer timers are set-then-decrement in the same
+     frame. Pressing jump mid-air shows jumpBufferSec − dt immediately.
+     Feels tighter in hand and the test suite requires it.
+
+Repository-level invariants still holding:
+  • grep -rn "@engine\|@scenes\|@ui" src/core → empty
+  • grep -rn "Math.random" src/core → empty (cosmetic uses are in
+    src/engine/Camera.ts only)
+  • No DungeonScene / DungeonGen / RoomDef / @content/rooms references
+    anywhere in src or tests.
+
+
+================================================================================
+ 7. WHAT'S NEXT — M3b MELEE COMBAT
+================================================================================
+
+Do NOT start M3b until the M3a manual playthrough is done and signed off.
+Even a headless green gate can't prove the substrate feels like a platformer.
+
+Planned M3b scope (preview — not yet planned in detail):
+
+  1. Melee primitives: attack frames, hitboxes, parry windows, stagger,
+     i-frames. Pure logic in src/core/platformer/ or a new
+     src/core/melee/ subsystem. TDD-first.
+  2. First enemy archetype: telegraphed-swing alien swordsman. Slow,
+     read-and-react, sets the template. Souls-like target — parry >
+     dodge > trade > tank.
+  3. Tile atlas + sprite rendering. Retire the gray-rectangle-on-
+     dark-red programmer art. Pass 1 of planet-side graphics.
+  4. Hazard tiles (internal tile id 2 = hazard). Spikes, death planes.
+     TiledLoader gains a second tile mapping.
+  5. Save point ("prie-dieu" / alien altar) as an interactable object
+     type. Respawn behavior → save v5.
+  6. Tune pass on CONTROLLER_CFG + PHYSICS based on M3a playthrough.
+  7. Camera polish: lookahead in movement direction, lerp smoothing,
+     deadzone. Blocks any room larger than 640×360.
+
+Budget ceiling still in force (set in M2c retro): ≤25 kB gzip,
+≤80 modules. Revisit only if breached.
+
+The M3b plan will be written with the superpowers:writing-plans skill
+once the M3a playtest is on disk. Don't stack milestones without
+playtest validation in between.
+
+
+================================================================================
+ 8. HOW TO PICK UP FROM HERE (fresh chat)
+================================================================================
+
+Minimum you need:
+  1. This file (docs/production/BLACK-STAR-HANDOFF.txt)
+  2. docs/production/retros/m3a-retro.md
+  3. docs/production/retros/m3a-playthrough-script.md
+
+If the next step is the manual playthrough:
+  • `npm run dev`
+  • Follow the 12 steps in m3a-playthrough-script.md
+  • Note any tuning complaints in a new file:
+        docs/production/retros/m3a-playthrough-notes.md
+  • Commit that file with docs(m3a): playthrough notes.
+
+If the next step is writing the M3b plan:
+  • Read m3a-retro.md — "Action items before M3b" and "M3b scope
+    preview" are the skeleton.
+  • Use the superpowers:writing-plans skill. Place the plan at
+        docs/superpowers/plans/2026-MM-DD-m3b-melee-combat.md
+  • First task is always: verify current tag is m3a-complete + tests
+    green.
+
+If the next step is executing the M3b plan:
+  • Use the superpowers:subagent-driven-development skill
+    (one subagent per phase, verify gate between phases).
+  • Apply the same non-negotiable rules from section 5 of this file.
+  • Trace every expected test value by hand before dispatching (M3a
+    taught us that spec code blocks can ship with bugs — running them
+    in your head before handing them to a subagent saves re-dispatches).
+
+
+================================================================================
+ 9. KNOWN SHARP EDGES
+================================================================================
+
+  • SpaceScene is heavy (~450 lines, 5 entangled concerns). A
+    CombatSystem extraction is queued but not scoped — defer until
+    M3b sprite pass lands and makes the scene even heavier.
+
+  • modules.json duplicates weapon tuning that weapons.json owns
+    (damage + range live in both). Slot-fit lives in modules.json,
+    behavior in weapons.json. Either drop the duplicates or accept the
+    footgun. Flagged in M2c retro; not yet resolved.
+
+  • availablePower is hardcoded to 100 in three call sites (SpaceScene
+    player fire, enemy shooter fire twice). PowerBudget exists in core
+    but isn't wired into canFire. M3b or M3c polish task.
+
+  • Enemy spawns are hand-placed (4 fixed coordinates). No wave system,
+    no Decay-Clock-driven spawning, no respawn. Kill all 4 and the
+    sector is empty forever.
+
+  • Player death → TitleScene. No "you died" screen, no legacy
+    inheritance. Legacy is a planned milestone, not close.
+
+  • Planet camera is a centered clamp with no lookahead, no smoothing,
+    no deadzone. Fine for 640×360-sized rooms. Blocks anything larger.
+
+  • Planet hazards, enemies, save points, and combat all don't exist
+    yet. Planet surface is currently "walk around in one room, touch
+    exit to leave." By design — M3a is foundation, M3b is content.
+
+
+================================================================================
+ 10. GRAPHICS ROADMAP (locked in earlier; still in force)
+================================================================================
+
+Three scheduled passes, not one end-of-development crunch:
+
+  Pass 1 — M2d "Combat Feedback" (SPACE side)
+    Sprites for ships, projectiles, enemies. Particle pool. Animated
+    damage states. Real muzzle/hit art. Hit-stop. Damage number popups.
+    Slides into M3b on the PLANET side (tile atlas, sprite player,
+    enemy sprites).
+
+  Pass 2 — "Tone Pass"
+    After signature mechanics (Decay Clock, Legacy, Black Star event).
+    UI redesign from gray rectangles to ship-HUD aesthetic, per-scene
+    color grading, faction iconography, alien-glyph fonts for ruins.
+
+  Pass 3 — "Launch Polish"
+    Before ship. Transitions, trailer moments, final palette tuning.
+
+Placeholder rectangles are the correct aesthetic for now. Every
+`r.drawRect` for gameplay entities is a future `r.drawSprite` call.
+
+
+================================================================================
+ END OF HANDOFF
+================================================================================
