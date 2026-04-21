@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>The Long Record — Black Star</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=IM+Fell+DW+Pica:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* palette */
+    --bone-1: #e8dcc4;
+    --bone-2: #c9b896;
+    --bone-3: #8b7355;
+    --shadow-1: #1a1410;
+    --shadow-2: #2a1f17;
+    --shadow-3: #3d2d21;
+    --rust-1: #6b2818;
+    --rust-2: #8b3a22;
+    --rust-3: #a04b2c;
+    --stone-1: #5a5f65;
+    --stone-2: #3e4347;
+    --stone-3: #2a2e32;
+    --candle-1: #f4c57a;
+    --candle-2: #d89b4a;
+    --gold: #c9a04b;
+
+    --ink: #1f1710;
+    --ink-faded: #3a2a1d;
+    --ink-fainter: #5a4632;
+
+    /* tweakables */
+    --candle-intensity: 1;
+    --candle-flicker: 1;
+    --page-warp: 1;
+    --vignette-strength: 1;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #05030a;
+    color: var(--bone-1);
+    overflow: hidden;
+    height: 100%;
+    font-family: "IM Fell English", serif;
+  }
+
+  /* --- stage ------------------------------------------------------- */
+  .cabin {
+    position: fixed; inset: 0;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* wood plank desk surface — dark, radial-lit */
+  .desk {
+    position: absolute; inset: 0;
+    background:
+      /* subtle candle pool */
+      radial-gradient(ellipse 70% 55% at 38% 62%,
+        rgba(244,197,122, calc(0.22 * var(--candle-intensity))) 0%,
+        rgba(216,155,74, calc(0.10 * var(--candle-intensity))) 25%,
+        rgba(61,45,33, 0.0) 55%),
+      /* deep cabin ambience */
+      radial-gradient(ellipse 120% 90% at 50% 55%,
+        #2a1b12 0%, #1a1008 35%, #0a0604 75%, #040202 100%);
+  }
+
+  /* wood grain, made with repeating linear-gradients */
+  .wood {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        92deg,
+        rgba(0,0,0,0) 0px,
+        rgba(0,0,0,0.0) 120px,
+        rgba(255,220,170,0.015) 121px,
+        rgba(0,0,0,0.25) 122px,
+        rgba(0,0,0,0) 124px,
+        rgba(0,0,0,0) 380px,
+        rgba(80,50,30,0.12) 381px,
+        rgba(0,0,0,0) 383px
+      ),
+      repeating-linear-gradient(
+        89deg,
+        rgba(0,0,0,0) 0,
+        rgba(0,0,0,0) 7px,
+        rgba(0,0,0,0.05) 8px,
+        rgba(0,0,0,0) 9px
+      );
+    mix-blend-mode: overlay;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  /* plank seams */
+  .planks {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+  .plank-seam {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(255,210,160,0.05), rgba(0,0,0,0.45));
+    box-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
+
+  /* grain noise overlay using SVG turbulence */
+  .grain {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15  0 0 0 0 0.10  0 0 0 0 0.07  0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* vignette */
+  .vignette {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 95% 75% at 50% 58%,
+      rgba(0,0,0,0) 45%,
+      rgba(0,0,0,0.55) 75%,
+      rgba(0,0,0,0.92) 100%);
+    opacity: var(--vignette-strength);
+  }
+
+  /* --- porthole ---------------------------------------------------- */
+  .porthole {
+    position: absolute;
+    top: 5%; right: 6%;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, #0a0e1a 0%, #05070d 55%, #020305 100%);
+    box-shadow:
+      inset 0 0 0 14px #1a1007,
+      inset 0 0 0 18px #0a0604,
+      inset 0 0 0 22px #2a1b10,
+      inset 0 0 60px rgba(0,0,0,0.9),
+      inset 8px 10px 40px rgba(244,197,122,0.04),
+      0 0 60px rgba(0,0,0,0.7);
+    overflow: hidden;
+  }
+  .porthole::before {
+    /* rivets */
+    content: "";
+    position: absolute; inset: 4px;
+    border-radius: 50%;
+    background-image: radial-gradient(circle, #4a3020 0 2px, transparent 3px);
+    background-size: 22px 22px;
+    background-position: 50% 0%;
+    -webkit-mask: radial-gradient(circle at center, transparent 82%, #000 83%, #000 95%, transparent 96%);
+            mask: radial-gradient(circle at center, transparent 82%, #000 83%, #000 95%, transparent 96%);
+    opacity: 0.8;
+  }
+  .porthole .sky {
+    position: absolute; inset: 22px;
+    border-radius: 50%;
+    background:
+      radial-gradient(1px 1px at 20% 30%, rgba(232,220,196,0.7), transparent 2px),
+      radial-gradient(1px 1px at 70% 18%, rgba(232,220,196,0.45), transparent 2px),
+      radial-gradient(1px 1px at 55% 55%, rgba(232,220,196,0.55), transparent 2px),
+      radial-gradient(1px 1px at 82% 68%, rgba(232,220,196,0.35), transparent 2px),
+      radial-gradient(1px 1px at 32% 72%, rgba(232,220,196,0.4), transparent 2px),
+      radial-gradient(1px 1px at 44% 40%, rgba(201,160,75,0.35), transparent 2px),
+      radial-gradient(2px 2px at 62% 35%, rgba(244,197,122,0.25), transparent 3px),
+      radial-gradient(ellipse 90% 70% at 40% 45%, rgba(60,40,30,0.2), transparent 80%),
+      #05070d;
+  }
+  .porthole-glass {
+    position: absolute; inset: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(244,197,122,0.10) 0%, rgba(244,197,122,0) 30%, rgba(0,0,0,0) 70%, rgba(244,197,122,0.04) 100%);
+    pointer-events: none;
+  }
+
+  /* --- candle ------------------------------------------------------ */
+  .candle-rig {
+    position: absolute;
+    left: 7%;
+    top: 26%;
+    width: 170px; height: 260px;
+    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.7));
+  }
+  .candle-holder {
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: 0;
+    width: 110px; height: 34px;
+    background:
+      radial-gradient(ellipse at 50% 30%, #5a4430 0%, #2a1a10 60%, #120a06 100%);
+    border-radius: 50%/40%;
+    box-shadow: 0 6px 0 #0a0604, inset 0 -4px 6px rgba(0,0,0,0.7), inset 0 2px 2px rgba(244,197,122,0.08);
+  }
+  .candle-holder::after {
+    content: "";
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    top: -8px;
+    width: 70px; height: 14px;
+    border-radius: 50%/50%;
+    background: radial-gradient(ellipse at 50% 40%, #8b6a44 0%, #3d2d21 70%);
+  }
+  .candle-stick {
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: 28px;
+    width: 34px; height: 160px;
+    background:
+      linear-gradient(to right,
+        #6a5338 0%, #b8956a 20%, #e8d5a8 45%, #b8956a 70%, #5a4228 100%);
+    border-radius: 3px 3px 2px 2px / 6px 6px 2px 2px;
+    box-shadow:
+      inset 0 -10px 12px rgba(0,0,0,0.4),
+      inset 0 4px 8px rgba(255,230,180,0.3);
+  }
+  /* wax drips */
+  .candle-stick::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 30px;
+    background:
+      radial-gradient(ellipse 12px 8px at 15% 80%, #e8d5a8 60%, transparent 70%),
+      radial-gradient(ellipse 8px 14px at 70% 95%, #d8c298 60%, transparent 70%),
+      radial-gradient(ellipse 6px 10px at 40% 100%, #c9b896 60%, transparent 70%);
+  }
+  .candle-wick {
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: 186px;
+    width: 2px; height: 10px;
+    background: #0a0604;
+  }
+  .candle-flame {
+    position: absolute;
+    left: 50%;
+    bottom: 194px;
+    transform: translateX(-50%);
+    width: 18px; height: 34px;
+    background:
+      radial-gradient(ellipse at 50% 75%, #fff4d0 0%, #f4c57a 30%, #d89b4a 60%, #8b3a22 85%, transparent 100%);
+    border-radius: 50% 50% 40% 40% / 70% 70% 30% 30%;
+    filter: blur(0.6px);
+    transform-origin: 50% 100%;
+    animation: flicker 2.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+  .candle-flame::after {
+    content: "";
+    position: absolute;
+    inset: 3px 4px 6px 4px;
+    background: radial-gradient(ellipse at 50% 80%, #ffffff 0%, #fff4d0 40%, rgba(244,197,122,0) 80%);
+    border-radius: 50%;
+  }
+  .candle-halo {
+    position: absolute;
+    left: 50%;
+    bottom: 168px;
+    transform: translate(-50%, 0);
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(255,244,208, calc(0.18 * var(--candle-intensity))) 0%,
+      rgba(244,197,122, calc(0.10 * var(--candle-intensity))) 18%,
+      rgba(216,155,74, calc(0.04 * var(--candle-intensity))) 40%,
+      rgba(0,0,0,0) 70%);
+    pointer-events: none;
+    animation: halo 3.1s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes flicker {
+    0%, 100% { transform: translateX(-50%) scaleY(1) skewX(0deg); opacity: 1; }
+    25% { transform: translateX(-50%) scaleY(1.06) skewX(-2deg); opacity: 0.94; }
+    50% { transform: translateX(-50%) scaleY(0.96) skewX(1.5deg); opacity: 1; }
+    75% { transform: translateX(-50%) scaleY(1.04) skewX(0.5deg); opacity: 0.92; }
+  }
+  @keyframes halo {
+    0%, 100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, 0) scale(1.03); opacity: 0.92; }
+  }
+
+  /* --- desk props ------------------------------------------------- */
+  .inkwell {
+    position: absolute;
+    right: 9%; bottom: 9%;
+    width: 110px; height: 86px;
+    filter: drop-shadow(0 12px 18px rgba(0,0,0,0.7));
+  }
+  .inkwell-base {
+    position: absolute; inset: auto 0 0 0;
+    height: 54px;
+    background: radial-gradient(ellipse at 50% 30%, #3a2a1d 0%, #1a1008 60%, #0a0604 100%);
+    border-radius: 50% / 30%;
+    box-shadow: inset 0 -6px 10px rgba(0,0,0,0.7), inset 0 2px 3px rgba(244,197,122,0.08);
+  }
+  .inkwell-ink {
+    position: absolute;
+    left: 50%; top: 10px;
+    transform: translateX(-50%);
+    width: 44px; height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 40% 30%, #1f1a24 0%, #05040a 70%);
+    box-shadow: inset 0 -3px 6px rgba(201,160,75,0.15), inset 0 2px 4px rgba(0,0,0,0.9);
+  }
+  .quill {
+    position: absolute;
+    right: 2%; bottom: 10%;
+    width: 260px; height: 260px;
+    transform: rotate(24deg);
+    transform-origin: 20% 90%;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+  }
+  .quill svg { width: 100%; height: 100%; }
+
+  /* --- book --------------------------------------------------------
+     Top-down open spread: reader is looking straight down onto the
+     open pages. A light rotateX lends subtle depth without tipping
+     the pages away from the camera. */
+  .book {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%) perspective(3000px) rotateX(6deg);
+    width: 1080px; height: 780px;
+    transform-style: preserve-3d;
+  }
+
+  /* leather cover peeking at edges — sits BEHIND the pages so the
+     open spread is what the reader sees */
+  .book-cover {
+    position: absolute;
+    inset: -26px -36px -30px -36px;
+    background:
+      radial-gradient(ellipse at 50% 50%, #4a1f10 0%, #2e130a 55%, #180a05 100%);
+    border-radius: 6px 10px 10px 6px;
+    box-shadow:
+      0 30px 60px rgba(0,0,0,0.8),
+      0 10px 20px rgba(0,0,0,0.6),
+      inset 0 0 0 2px #0a0402,
+      inset 0 0 40px rgba(0,0,0,0.6);
+    z-index: 0;
+  }
+  .book-cover::before {
+    /* leather grain */
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='l'><feTurbulence type='fractalNoise' baseFrequency='2.4' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.04  0 0 0 0 0.02  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23l)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.85;
+    border-radius: 6px 10px 10px 6px;
+  }
+  .book-cover::after {
+    /* tooled gold border visible only at exposed cover margins */
+    content: "";
+    position: absolute;
+    inset: 6px 10px 8px 10px;
+    border: 1px solid rgba(201,160,75,0.2);
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.4), inset 0 0 0 4px rgba(201,160,75,0.12);
+    pointer-events: none;
+  }
+
+  .spine-gutter {
+    position: absolute;
+    left: 50%; top: -14px; bottom: -18px;
+    width: 56px;
+    transform: translateX(-50%);
+    background:
+      linear-gradient(to right,
+        rgba(0,0,0,0.0) 0%,
+        rgba(0,0,0,0.22) 30%,
+        rgba(0,0,0,0.55) 50%,
+        rgba(0,0,0,0.22) 70%,
+        rgba(0,0,0,0.0) 100%);
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* Pages sit FLAT, facing the camera. Parchment tone is uniform so
+     text reads cleanly; only a subtle gutter shade and a single warm
+     candle wash on the left half. */
+  .page {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 50%;
+    overflow: hidden;
+    background:
+      /* candle warmth, gentle */
+      radial-gradient(ellipse 110% 90% at 28% 55%, rgba(244,197,122,0.10) 0%, rgba(244,197,122,0) 70%),
+      /* parchment — mostly uniform, very subtle gutter tint */
+      linear-gradient(to var(--gutter-dir, right),
+        #f2e6cc 0%, #ecdfc4 50%, #e4d5b4 94%, #d4c29a 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(107,40,24,0.12),
+      inset 0 30px 50px rgba(90,60,40,0.06),
+      inset 0 -18px 30px rgba(60,40,25,0.08);
+    z-index: 1;
+  }
+  .page.left {
+    left: 0;
+    --gutter-dir: right;
+    border-radius: 5px 2px 2px 5px;
+  }
+  .page.right {
+    right: 0;
+    --gutter-dir: left;
+    background:
+      radial-gradient(ellipse 130% 95% at 45% 48%, rgba(244,197,122,0.12) 0%, rgba(244,197,122,0) 65%),
+      linear-gradient(to left,
+        #f2e6cc 0%, #ecdfc4 50%, #e4d5b4 94%, #d4c29a 100%);
+    border-radius: 2px 5px 5px 2px;
+  }
+
+  /* paper noise — lightened so it tints but never obscures ink */
+  .page::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.22  0 0 0 0 0.10  0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .page::after {
+    /* subtle foxing & water stains, kept thin so text stays legible */
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 30% 16% at 75% 15%, rgba(107,82,56,0.12) 0%, rgba(107,82,56,0) 70%),
+      radial-gradient(ellipse 20% 12% at 18% 82%, rgba(139,58,34,0.06) 0%, rgba(139,58,34,0) 72%),
+      radial-gradient(circle 1.5px at 12% 24%, rgba(61,45,33,0.25), transparent 3px),
+      radial-gradient(circle 1.2px at 78% 32%, rgba(61,45,33,0.22), transparent 3px),
+      radial-gradient(circle 1.5px at 34% 62%, rgba(61,45,33,0.2), transparent 3px),
+      radial-gradient(circle 1px at 62% 72%, rgba(61,45,33,0.28), transparent 2px),
+      radial-gradient(circle 1.2px at 82% 84%, rgba(61,45,33,0.22), transparent 3px);
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 0;
+  }
+
+  /* rough deckle edge on outside of each page (torn) */
+  .page.left .deckle, .page.right .deckle {
+    position: absolute;
+    top: -2px; bottom: -2px;
+    width: 10px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='400' preserveAspectRatio='none'><path d='M10 0 L4 6 L8 14 L3 22 L9 30 L5 40 L7 50 L3 60 L8 72 L5 84 L9 96 L4 110 L8 122 L3 134 L7 148 L5 160 L9 174 L4 186 L7 198 L3 210 L8 224 L4 236 L9 248 L5 260 L7 272 L3 286 L8 298 L4 310 L7 322 L3 334 L8 346 L4 358 L9 372 L5 384 L7 396 L10 400 Z' fill='%230a0604' opacity='0.35'/></svg>");
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .page.left .deckle { left: -1px; transform: scaleX(-1); }
+  .page.right .deckle { right: -1px; }
+
+  /* page content */
+  .page-content {
+    position: relative;
+    height: 100%;
+    padding: 48px 72px 48px 72px;
+    box-sizing: border-box;
+    color: var(--ink);
+    z-index: 2;
+  }
+  .page.left .page-content { padding-right: 56px; padding-left: 84px; }
+  .page.right .page-content { padding-left: 56px; padding-right: 84px; padding-top: 44px; padding-bottom: 44px; }
+
+  /* --- left page: entries ---------------------------------------- */
+  .entry {
+    position: relative;
+    margin-bottom: 22px;
+  }
+  .entry-date {
+    font-family: "IM Fell English SC", serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--ink-fainter);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .entry-body {
+    font-family: "IM Fell English", serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+    text-shadow: 0 0 0.4px rgba(31,23,16,0.3);
+  }
+  .entry-body em { font-style: normal; text-decoration: underline; text-decoration-color: rgba(107,40,24,0.4); text-decoration-thickness: 0.5px; text-underline-offset: 3px; }
+  .entry-sig {
+    display: block;
+    margin-top: 4px;
+    font-family: "IM Fell DW Pica", serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink-faded);
+    text-align: right;
+    padding-right: 18px;
+  }
+
+  /* ink bleed effect via SVG filter for one entry */
+  .ink-bleed {
+    filter: url(#ink-bleed);
+  }
+
+  /* corrections: strikethrough */
+  .strike {
+    position: relative;
+    display: inline-block;
+  }
+  .strike::after {
+    content: "";
+    position: absolute;
+    left: -2px; right: -2px;
+    top: 54%;
+    height: 2px;
+    background: var(--ink);
+    transform: rotate(-1deg);
+    border-radius: 1px;
+    opacity: 0.85;
+  }
+
+  /* ink blot */
+  .blot {
+    position: absolute;
+    width: 64px; height: 54px;
+    background:
+      radial-gradient(ellipse 30px 22px at 55% 50%, #1a1008 55%, rgba(26,16,8,0.6) 70%, transparent 80%),
+      radial-gradient(ellipse 10px 8px at 18% 32%, #1a1008 70%, transparent 85%),
+      radial-gradient(ellipse 7px 6px at 88% 66%, #1a1008 70%, transparent 85%),
+      radial-gradient(ellipse 4px 3px at 34% 82%, #1a1008 70%, transparent 85%),
+      radial-gradient(ellipse 5px 4px at 80% 20%, #1a1008 70%, transparent 85%);
+    filter: blur(0.3px);
+    opacity: 0.95;
+    pointer-events: none;
+  }
+
+  /* wax seal */
+  .seal {
+    position: absolute;
+    width: 74px; height: 74px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 38% 32%, #c85a3a 0%, #8b2a16 45%, #4e1608 100%);
+    box-shadow:
+      0 2px 3px rgba(0,0,0,0.55),
+      inset 0 -4px 8px rgba(0,0,0,0.5),
+      inset 0 4px 6px rgba(255,160,110,0.2);
+    filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5));
+    transform: rotate(-12deg);
+  }
+  .seal::before {
+    /* drip edge */
+    content: "";
+    position: absolute;
+    inset: -4px -8px -6px -6px;
+    border-radius: 50% 45% 55% 48% / 50% 48% 52% 50%;
+    background:
+      radial-gradient(circle at 40% 35%, #8b2a16 0%, #5a1a0a 60%, #2a0a04 100%);
+    z-index: -1;
+    filter: blur(0.3px);
+    box-shadow: inset 0 -4px 6px rgba(0,0,0,0.6);
+  }
+  .seal::after {
+    /* impressed sigil — a crossed star */
+    content: "";
+    position: absolute; inset: 14px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(0,0,0,0.3) 0%, transparent 60%),
+      conic-gradient(from 0deg at 50% 50%,
+        transparent 0 40deg, rgba(0,0,0,0.4) 42deg 48deg, transparent 50deg 130deg,
+        rgba(0,0,0,0.4) 132deg 138deg, transparent 140deg 220deg,
+        rgba(0,0,0,0.4) 222deg 228deg, transparent 230deg 310deg,
+        rgba(0,0,0,0.4) 312deg 318deg, transparent 320deg 360deg);
+    border-radius: 50%;
+    mix-blend-mode: multiply;
+  }
+  .seal-star {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px; height: 36px;
+    color: rgba(0,0,0,0.45);
+  }
+
+  /* folded corner on left page — bottom-left corner */
+  .fold-corner {
+    position: absolute;
+    width: 58px; height: 58px;
+    pointer-events: none;
+  }
+  .fold-corner svg { width: 100%; height: 100%; display: block; }
+
+  /* --- right page: prompt & choices ------------------------------ */
+  .chapter-head {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .chapter-ornament {
+    display: block;
+    margin: 0 auto 6px;
+    width: 128px; height: 14px;
+    color: var(--ink-faded);
+    opacity: 0.8;
+  }
+  .chapter-title {
+    font-family: "IM Fell English SC", serif;
+    font-size: 12.5px;
+    letter-spacing: 0.32em;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+  }
+  .prompt {
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-size: 16.5px;
+    line-height: 1.5;
+    color: var(--ink-faded);
+    margin: 0 18px 14px 18px;
+    text-align: center;
+  }
+  .prompt::before, .prompt::after {
+    display: block;
+    content: "";
+    height: 1px;
+    width: 54px;
+    margin: 10px auto;
+    background: linear-gradient(to right, transparent, rgba(61,45,33,0.5), transparent);
+  }
+
+  .instruction {
+    font-family: "IM Fell English SC", serif;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: var(--ink-fainter);
+    text-align: center;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 6px;
+  }
+  .choice {
+    position: relative;
+    padding: 8px 16px 10px 50px;
+    font-family: "IM Fell English", serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.35;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 280ms cubic-bezier(.2,.7,.2,1), filter 280ms, color 280ms;
+    transform-origin: 20% 50%;
+  }
+  .choice-glyph {
+    position: absolute;
+    left: 14px; top: 8px;
+    width: 24px; height: 24px;
+    font-family: "UnifrakturCook", serif;
+    font-size: 20px;
+    color: var(--ink-faded);
+    text-align: center;
+    line-height: 26px;
+    transition: color 280ms, transform 280ms;
+  }
+  .choice-underline {
+    position: absolute;
+    left: 48px; right: 10px; bottom: 4px;
+    height: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 280ms;
+    background: radial-gradient(ellipse at 50% 100%, rgba(244,197,122,0.7) 0%, rgba(244,197,122,0) 70%);
+  }
+  .choice-sketch {
+    position: absolute;
+    left: 44px; right: 6px; bottom: 0;
+    height: 14px;
+    opacity: 0;
+    transition: opacity 320ms ease;
+    color: rgba(107,40,24,0.85);
+  }
+  .choice-sketch svg { width: 100%; height: 100%; display: block; }
+
+  .choice:hover, .choice:focus-visible {
+    outline: none;
+    color: #0e0804;
+    transform: translateX(3px) rotate(-0.2deg);
+    filter: drop-shadow(0 0 14px rgba(244,197,122,0.35));
+  }
+  .choice:hover .choice-glyph, .choice:focus-visible .choice-glyph {
+    color: var(--rust-1);
+    transform: scale(1.08);
+  }
+  .choice:hover .choice-underline,
+  .choice:focus-visible .choice-underline,
+  .choice:hover .choice-sketch,
+  .choice:focus-visible .choice-sketch { opacity: 1; }
+
+  .choice::before {
+    /* warm candle spill on page behind hovered/selected choice */
+    content: "";
+    position: absolute;
+    inset: -8px -14px -8px -14px;
+    background: radial-gradient(ellipse at 20% 50%, rgba(244,197,122,0.22) 0%, rgba(244,197,122,0) 72%);
+    pointer-events: none;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+  .choice:hover::before, .choice:focus-visible::before { opacity: 1; }
+
+  /* sealed (chosen) and faded (unchosen) states */
+  .choice.sealed {
+    color: #0b0604;
+    transform: translateX(4px);
+    filter: drop-shadow(0 0 20px rgba(244,197,122,0.5));
+  }
+  .choice.sealed::before { opacity: 1; }
+  .choice.sealed .choice-underline { opacity: 1; background: radial-gradient(ellipse at 50% 100%, rgba(201,160,75,0.9) 0%, rgba(201,160,75,0) 70%); }
+  .choice.sealed .choice-sketch { opacity: 1; color: rgba(107,40,24,1); }
+  .choice.sealed .choice-glyph { color: var(--rust-1); }
+  .choice.faded {
+    opacity: 0.22;
+    filter: blur(0.3px);
+    pointer-events: none;
+    transition: opacity 900ms ease, filter 900ms ease;
+  }
+
+  /* right-page marginalia — a small annotation */
+  .marginalia {
+    position: absolute;
+    right: 18px;
+    bottom: 100px;
+    width: 96px;
+    font-family: "IM Fell DW Pica", serif;
+    font-style: italic;
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--ink-fainter);
+    transform: rotate(4deg);
+    opacity: 0.85;
+  }
+  .marginalia::before {
+    content: "";
+    display: block;
+    height: 1px;
+    width: 34px;
+    background: rgba(61,45,33,0.5);
+    margin-bottom: 4px;
+  }
+
+  /* signature line awaiting a signature */
+  .sig-line {
+    position: absolute;
+    bottom: 54px;
+    left: 24%; right: 24%;
+    border-top: 1px dashed rgba(61,45,33,0.4);
+  }
+  .sig-caption {
+    position: absolute;
+    bottom: 36px;
+    left: 0; right: 0;
+    text-align: center;
+    font-family: "IM Fell English SC", serif;
+    font-size: 9.5px;
+    letter-spacing: 0.28em;
+    color: var(--ink-fainter);
+    text-transform: uppercase;
+  }
+
+  /* folio number */
+  .folio {
+    position: absolute;
+    bottom: 16px;
+    font-family: "IM Fell English SC", serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-fainter);
+  }
+  .page.left .folio { left: 84px; }
+  .page.right .folio { right: 84px; }
+
+  /* a folded letter poking under the book on the left side */
+  .folded-letter {
+    position: absolute;
+    left: 18%;
+    bottom: 6%;
+    width: 260px; height: 180px;
+    background:
+      linear-gradient(145deg, #c9b896 0%, #b09870 60%, #8b7355 100%);
+    transform: rotate(-14deg);
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,0.6));
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .folded-letter::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='180'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.12  0 0 0 0 0.05  0 0 0 0.3 0'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.7;
+  }
+  .folded-letter::after {
+    /* fold crease */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to right, transparent 48%, rgba(0,0,0,0.3) 50%, transparent 52%),
+      linear-gradient(to bottom, transparent 48%, rgba(0,0,0,0.25) 50%, transparent 52%);
+  }
+
+  /* the letter's visible script */
+  .letter-script {
+    position: absolute;
+    inset: 14px 18px 18px 18px;
+    font-family: "IM Fell English", serif;
+    font-style: italic;
+    font-size: 11px;
+    line-height: 1.35;
+    color: #2a1f17;
+    opacity: 0.55;
+    columns: 1;
+  }
+
+  /* --- Tweaks panel ---------------------------------------------- */
+  .tweaks {
+    position: fixed;
+    right: 16px; bottom: 16px;
+    width: 260px;
+    background: #0a0604;
+    color: var(--bone-1);
+    border: 1px solid #3d2d21;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(201,160,75,0.12);
+    font-family: "IM Fell English SC", serif;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 14px 16px;
+    z-index: 50;
+    display: none;
+  }
+  .tweaks.open { display: block; }
+  .tweaks h4 {
+    margin: 0 0 12px 0;
+    font-weight: 400;
+    color: var(--candle-1);
+    letter-spacing: 0.3em;
+  }
+  .tweaks label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 10px;
+    color: var(--bone-2);
+  }
+  .tweaks input[type=range] { width: 100%; }
+
+  /* subtle floating dust motes near candle */
+  .mote {
+    position: absolute;
+    width: 2px; height: 2px;
+    border-radius: 50%;
+    background: rgba(244,197,122,0.45);
+    filter: blur(0.5px);
+    animation: drift 9s linear infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes drift {
+    0%   { transform: translate(0, 0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translate(-40px, -220px); opacity: 0; }
+  }
+
+  /* small credit/label at top-left */
+  .stamp {
+    position: absolute;
+    top: 18px; left: 22px;
+    font-family: "IM Fell English SC", serif;
+    letter-spacing: 0.32em;
+    font-size: 10px;
+    color: rgba(201,160,75,0.35);
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- shared SVG filters -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="ink-bleed" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.35" />
+    </filter>
+    <filter id="paper-displace" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="3" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="6"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="cabin">
+  <div class="desk"></div>
+  <div class="wood"></div>
+  <div class="planks">
+    <div class="plank-seam" style="top: 12%"></div>
+    <div class="plank-seam" style="top: 34%"></div>
+    <div class="plank-seam" style="top: 62%"></div>
+    <div class="plank-seam" style="top: 86%"></div>
+  </div>
+  <div class="grain"></div>
+
+  <!-- stamp -->
+  <div class="stamp">Impartial Regard &middot; Cabin of the Witness &middot; 412 PCY</div>
+
+  <!-- porthole top-right -->
+  <div class="porthole" aria-hidden="true">
+    <div class="sky"></div>
+    <div class="porthole-glass"></div>
+  </div>
+
+  <!-- candle left -->
+  <div class="candle-rig" aria-hidden="true">
+    <div class="candle-halo"></div>
+    <div class="candle-holder"></div>
+    <div class="candle-stick"></div>
+    <div class="candle-wick"></div>
+    <div class="candle-flame"></div>
+  </div>
+
+  <!-- a folded predecessor letter poking from under the book -->
+  <div class="folded-letter" aria-hidden="true">
+    <div class="letter-script">
+      &mdash; and if you are reading this, Witness, then I am already
+      named among the dust. Do not weep. Do not avenge. Write the
+      entry as the Order taught us: plainly, and without mercy for
+      yourself. The Long Record is not a confession. It is a wound
+      we keep open, so that those who follow will not repeat us.
+      <br/><br/>
+      Your predecessor &mdash; Auriel of the Tessarene bindery.
+    </div>
+  </div>
+
+  <!-- ink well + quill -->
+  <div class="inkwell" aria-hidden="true">
+    <div class="inkwell-base"></div>
+    <div class="inkwell-ink"></div>
+  </div>
+  <div class="quill" aria-hidden="true">
+    <svg viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- shaft -->
+      <path d="M40 240 Q120 120 210 30" stroke="#1a1410" stroke-width="3" fill="none" opacity="0.9"/>
+      <!-- feather body -->
+      <path d="M210 30 Q170 70 130 110 Q90 150 55 215 Q95 200 140 170 Q195 120 230 60 Z"
+            fill="#c9b896" opacity="0.92"/>
+      <!-- feather barbs, left side -->
+      <g stroke="#8b7355" stroke-width="1" opacity="0.8">
+        <path d="M130 110 L108 118"/>
+        <path d="M120 125 L96 130"/>
+        <path d="M110 140 L82 142"/>
+        <path d="M98 158 L68 160"/>
+        <path d="M88 176 L58 178"/>
+        <path d="M78 194 L52 198"/>
+        <path d="M68 212 L48 218"/>
+      </g>
+      <!-- feather barbs right -->
+      <g stroke="#8b7355" stroke-width="1" opacity="0.8">
+        <path d="M150 95 L170 84"/>
+        <path d="M160 110 L188 98"/>
+        <path d="M172 124 L202 110"/>
+        <path d="M186 138 L216 122"/>
+        <path d="M200 152 L226 134"/>
+      </g>
+      <!-- shading on feather -->
+      <path d="M210 30 Q170 70 130 110 Q110 130 90 160 Q120 150 150 130 Q200 90 225 50 Z"
+            fill="#8b7355" opacity="0.5"/>
+      <!-- tip ink -->
+      <path d="M40 240 L50 236 L44 246 Z" fill="#1a1410"/>
+    </svg>
+  </div>
+
+  <!-- the book -->
+  <div class="book">
+    <div class="book-cover"></div>
+    <div class="spine-gutter"></div>
+
+    <!-- LEFT PAGE: past entries --------------------------------- -->
+    <div class="page left">
+      <div class="deckle"></div>
+      <div class="page-content">
+
+        <div class="entry">
+          <div class="entry-date">Folio I &middot; 408 PCY &middot; The Binding</div>
+          <div class="entry-body">
+            I was given the signet in the small hour. The ring is heavier
+            than it looks, as if it remembers the fingers it has outlived.
+            Sister Tarn said the words over me twice, because the first
+            time my hands shook and the oil did not take. <em>I am the
+            Witness of the Order,</em> I said, <em>and I will not look
+            away.</em>
+          </div>
+          <span class="entry-sig">&mdash; Auriel</span>
+        </div>
+
+        <div class="entry">
+          <div class="entry-date">Folio IV &middot; 409 PCY &middot; The Thorned Provinces</div>
+          <div class="entry-body ink-bleed">
+            Damar Hul received me in the small court. He is <span class="strike">kinder</span>
+            quieter than the pamphlets suggest. He asked after the health of
+            the Patriarch and I told him what I had been told to tell. He
+            smiled like a man who knows he is being lied to and has decided
+            he does not mind. I left before the second bell.
+          </div>
+          <span class="entry-sig">&mdash; Auriel</span>
+        </div>
+
+        <div class="entry">
+          <div class="entry-date">Folio IX &middot; 410 PCY &middot; Auriel's last</div>
+          <div class="entry-body" style="font-family: 'IM Fell DW Pica', serif;">
+            If this is the last page in my hand, read it slowly. The Record
+            is not finished when I am finished. Another will take the pen.
+            Another always does. Write plainly. Write without mercy for
+            yourself. Do not, under any circumstance, lie to the page.
+          </div>
+          <span class="entry-sig" style="padding-right: 60px;">&mdash; A.</span>
+        </div>
+
+        <!-- blot + seal + fold -->
+        <div class="blot" style="right: 78px; top: 42%; transform: rotate(-18deg);"></div>
+
+        <div class="seal" style="bottom: 120px; right: 60px;">
+          <svg class="seal-star" viewBox="0 0 36 36">
+            <g fill="currentColor">
+              <path d="M18 2 L20 16 L34 18 L20 20 L18 34 L16 20 L2 18 L16 16 Z" opacity="0.9"/>
+              <circle cx="18" cy="18" r="2.4" />
+            </g>
+          </svg>
+        </div>
+
+        <!-- folded bottom-left corner -->
+        <div class="fold-corner" style="left: -2px; bottom: -2px;">
+          <svg viewBox="0 0 60 60">
+            <defs>
+              <linearGradient id="foldg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#c9b896"/>
+                <stop offset="60%" stop-color="#8b7355"/>
+                <stop offset="100%" stop-color="#5a4228"/>
+              </linearGradient>
+            </defs>
+            <!-- shadow cast where the page is folded back -->
+            <path d="M0 60 L0 28 L28 60 Z" fill="#1a1410" opacity="0.55"/>
+            <!-- the folded-back flap showing parchment back -->
+            <path d="M0 60 L0 32 L28 60 Z" fill="url(#foldg)"/>
+            <path d="M0 60 L0 32 L28 60 Z" fill="none" stroke="#3d2d21" stroke-width="0.5" opacity="0.6"/>
+          </svg>
+        </div>
+
+        <div class="folio">Folio XXIV &middot; recto</div>
+      </div>
+    </div>
+
+    <!-- RIGHT PAGE: prompt + choices ---------------------------- -->
+    <div class="page right">
+      <div class="deckle"></div>
+      <div class="page-content">
+
+        <div class="chapter-head">
+          <svg class="chapter-ornament" viewBox="0 0 140 16" fill="none" stroke="currentColor" stroke-width="0.8">
+            <path d="M2 8 H52" />
+            <path d="M88 8 H138" />
+            <circle cx="70" cy="8" r="3" stroke="currentColor" fill="none"/>
+            <path d="M60 8 L70 2 L80 8 L70 14 Z" fill="none"/>
+          </svg>
+          <div class="chapter-title">Chapter the First &middot; The Assignment</div>
+        </div>
+
+        <div class="prompt">
+          The Patriarch's dispatcher has placed a sealed writ upon your desk.
+          It bears the mark of the Thorned Provinces and the name of a man
+          you have never met. The <em>Impartial Regard</em> is to sail before
+          dawn. <br/>
+          How do you record this, Witness?
+        </div>
+
+        <div class="instruction">Choose a phrasing. It cannot be unwritten.</div>
+
+        <div class="choices" role="listbox" aria-label="Phrasing choices">
+
+          <div class="choice" role="option" tabindex="0">
+            <span class="choice-glyph">I</span>
+            I accepted the writ without reading it. The Order does not send
+            letters one is permitted to refuse.
+            <div class="choice-underline"></div>
+            <div class="choice-sketch"><svg viewBox="0 0 300 14" preserveAspectRatio="none">
+              <path d="M2 8 C 60 2, 120 14, 180 6 S 280 10, 298 4" stroke="currentColor" stroke-width="0.9" fill="none"/>
+            </svg></div>
+          </div>
+
+          <div class="choice" role="option" tabindex="0">
+            <span class="choice-glyph">II</span>
+            I read the writ twice. I did not like it either time. I signed
+            beneath the seal and did not ask the dispatcher his name.
+            <div class="choice-underline"></div>
+            <div class="choice-sketch"><svg viewBox="0 0 300 14" preserveAspectRatio="none">
+              <path d="M2 10 C 50 4, 110 12, 170 6 S 260 8, 298 10" stroke="currentColor" stroke-width="0.9" fill="none"/>
+            </svg></div>
+          </div>
+
+          <div class="choice" role="option" tabindex="0">
+            <span class="choice-glyph">III</span>
+            The writ was as thin as a communion wafer and weighed, in my
+            hand, the same. I placed it beneath this page for later.
+            <div class="choice-underline"></div>
+            <div class="choice-sketch"><svg viewBox="0 0 300 14" preserveAspectRatio="none">
+              <path d="M2 6 C 80 12, 150 2, 220 10 S 290 6, 298 8" stroke="currentColor" stroke-width="0.9" fill="none"/>
+            </svg></div>
+          </div>
+
+          <div class="choice" role="option" tabindex="0">
+            <span class="choice-glyph">IV</span>
+            A name I did not know. A province I have not seen. I am
+            frightened, and I will not pretend otherwise to this page.
+            <div class="choice-underline"></div>
+            <div class="choice-sketch"><svg viewBox="0 0 300 14" preserveAspectRatio="none">
+              <path d="M2 8 C 70 14, 140 2, 210 12 S 280 4, 298 10" stroke="currentColor" stroke-width="0.9" fill="none"/>
+            </svg></div>
+          </div>
+
+        </div>
+
+        <div class="marginalia">
+          Auriel's hand, <br/>pressed into the gutter: <br/>
+          <em>&ldquo;plainly, <br/>without mercy&rdquo;</em>
+        </div>
+
+        <div class="sig-line"></div>
+        <div class="sig-caption">&mdash; The Witness &mdash;</div>
+
+        <div class="folio">Folio XXIV &middot; verso</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- floating motes near candle -->
+  <div class="mote" style="left: 12%; top: 55%; animation-delay: 0s"></div>
+  <div class="mote" style="left: 15%; top: 48%; animation-delay: 2s"></div>
+  <div class="mote" style="left: 9%;  top: 42%; animation-delay: 4s"></div>
+  <div class="mote" style="left: 18%; top: 60%; animation-delay: 6s"></div>
+
+  <div class="vignette"></div>
+</div>
+
+<!-- Tweaks panel -->
+<div class="tweaks" id="tweaks" aria-hidden="true">
+  <h4>Tweaks</h4>
+  <label>Candle Intensity
+    <input type="range" min="0" max="1.6" step="0.05" value="1" data-var="--candle-intensity" />
+  </label>
+  <label>Vignette
+    <input type="range" min="0" max="1.4" step="0.05" value="1" data-var="--vignette-strength" />
+  </label>
+  <label>Flicker
+    <input type="range" min="0" max="1" step="0.05" value="1" id="flicker-toggle" />
+  </label>
+</div>
+
+<script>
+  // --- Tweaks protocol -------------------------------------------
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "candleIntensity": 1.6,
+    "vignette": 0,
+    "flicker": 1
+  }/*EDITMODE-END*/;
+
+  const panel = document.getElementById('tweaks');
+  function applyTweaks(v) {
+    document.documentElement.style.setProperty('--candle-intensity', v.candleIntensity);
+    document.documentElement.style.setProperty('--vignette-strength', v.vignette);
+    document.documentElement.style.setProperty('--candle-flicker', v.flicker);
+    const flame = document.querySelector('.candle-flame');
+    const halo = document.querySelector('.candle-halo');
+    if (flame) flame.style.animationPlayState = v.flicker > 0 ? 'running' : 'paused';
+    if (halo) halo.style.animationPlayState = v.flicker > 0 ? 'running' : 'paused';
+  }
+  let tweakState = { ...TWEAK_DEFAULTS };
+  applyTweaks(tweakState);
+
+  window.addEventListener('message', (e) => {
+    const d = e.data || {};
+    if (d.type === '__activate_edit_mode') panel.classList.add('open');
+    if (d.type === '__deactivate_edit_mode') panel.classList.remove('open');
+  });
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+  panel.querySelectorAll('input[type=range]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const v = parseFloat(inp.value);
+      if (inp.dataset.var === '--candle-intensity') tweakState.candleIntensity = v;
+      else if (inp.dataset.var === '--vignette-strength') tweakState.vignette = v;
+      else if (inp.id === 'flicker-toggle') tweakState.flicker = v;
+      applyTweaks(tweakState);
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: {
+        candleIntensity: tweakState.candleIntensity,
+        vignette: tweakState.vignette,
+        flicker: tweakState.flicker
+      }}, '*');
+    });
+  });
+
+  // --- Choice selection (placeholder — actual commit comes from data layer) ---
+  document.querySelectorAll('.choice').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.choice').forEach(o => {
+        if (o === c) o.classList.add('sealed');
+        else o.classList.add('faded');
+      });
+    });
+    c.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.click(); }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,7 +1,6 @@
 import { Scene, type SceneContext } from "@engine/Scene";
 import type { CaptainState } from "@core/player/Captain";
-import type { Loadout } from "@core/ship/Loadout";
-import { PlanetLandingScene } from "./PlanetLandingScene";
+import { CabinScene } from "./CabinScene";
 import { loadTiledMap, type TiledMap } from "@core/platformer/TiledLoader";
 import type { TileMap } from "@core/platformer/TileMap";
 import type { ObjectMarker } from "@core/platformer/types";
@@ -37,7 +36,6 @@ export class PlanetScene extends Scene {
   constructor(
     readonly captain: CaptainState,
     readonly seed: number,
-    readonly loadout: Loadout,
     readonly planetId: string,
   ) {
     super();
@@ -54,7 +52,7 @@ export class PlanetScene extends Scene {
 
   update(ctx: SceneContext, dt: number): void {
     if (ctx.input.wasKeyPressed("Escape")) {
-      ctx.changeScene(new PlanetLandingScene(this.captain, this.seed, this.loadout, this.planetId));
+      ctx.changeScene(new CabinScene());
       return;
     }
 
@@ -64,15 +62,12 @@ export class PlanetScene extends Scene {
       jumpPressed: ctx.input.wasKeyPressed("Space") || ctx.input.wasKeyPressed("KeyW"),
     };
 
-    // Probe current ground contact with a tiny downward sweep.
     const probe = resolveAABB(
       { x: this.body.x, y: this.body.y, w: PLAYER_W, h: PLAYER_H },
       { dx: 0, dy: 1 },
       this.map,
     );
 
-    // Sync controller vy from body so it sees the current fall state,
-    // then let the controller own all velocity decisions (run, jump, coyote, buffer).
     this.controller.vy = this.body.vy;
     this.controller = updateController(
       this.controller,
@@ -85,10 +80,8 @@ export class PlanetScene extends Scene {
     this.body.vx = this.controller.vx;
     this.body.vy = this.controller.vy;
 
-    // Physics integrates gravity into vy and advances position.
     const stepped = stepPhysics(this.body, dt, PHYSICS);
 
-    // Resolve collision against the tilemap.
     const result = resolveAABB(
       { x: this.body.x, y: this.body.y, w: PLAYER_W, h: PLAYER_H },
       { dx: stepped.x - this.body.x, dy: stepped.y - this.body.y },
@@ -104,7 +97,7 @@ export class PlanetScene extends Scene {
       const dx = (this.body.x + PLAYER_W / 2) - exit.x;
       const dy = (this.body.y + PLAYER_H / 2) - exit.y;
       if (dx * dx + dy * dy < 256) {
-        ctx.changeScene(new PlanetLandingScene(this.captain, this.seed, this.loadout, this.planetId));
+        ctx.changeScene(new CabinScene());
       }
     }
   }

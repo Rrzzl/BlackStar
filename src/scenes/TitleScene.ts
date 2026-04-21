@@ -1,52 +1,12 @@
 import { DebugOverlay } from "@engine/DebugOverlay";
 import { RNG } from "@core/RNG";
 import { Scene, type SceneContext } from "@engine/Scene";
-import { CharacterCreationScene } from "./CharacterCreationScene";
+import { WitnessCreationScene } from "./WitnessCreationScene";
+import { CabinScene } from "./CabinScene";
 import { drawSaveSlotPicker } from "./SaveSlotPickerOverlay";
 import { SaveStore } from "@engine/Save";
 import { migrations } from "@core/world/migrations";
-import { Loadout } from "@core/ship/Loadout";
-import type { HullDef } from "@core/ship/HullDef";
-import type { ModuleDef } from "@core/ship/ModuleDef";
-import hullsData from "@content/hulls.json";
-import modulesData from "@content/modules.json";
-import type { SaveSnapshot } from "@core/world/SaveSnapshot";
-import { SpaceScene } from "./SpaceScene";
-import { StationScene } from "./StationScene";
-import { PlanetLandingScene } from "./PlanetLandingScene";
-import { PlanetScene } from "./PlanetScene";
 import { drawButton } from "@ui/Button";
-
-const HULLS = hullsData as unknown as HullDef[];
-const MODULES = modulesData as unknown as ModuleDef[];
-
-function rebuildLoadout(snap: SaveSnapshot): Loadout {
-  const hull = HULLS.find((h) => h.id === snap.ship.hullId) ?? HULLS.find((h) => h.id === "shrike")!;
-  const loadout = new Loadout(hull);
-  for (const modId of snap.ship.moduleIds) {
-    const mod = MODULES.find((m) => m.id === modId);
-    if (!mod) continue;
-    try { loadout.install(mod); } catch { /* slot full, skip */ }
-  }
-  return loadout;
-}
-
-function sceneFromSnapshot(snap: SaveSnapshot): Scene {
-  const loadout = rebuildLoadout(snap);
-  const { captain, seed } = snap;
-  switch (snap.scene.type) {
-    case "SpaceScene":
-      return new SpaceScene(captain, seed, loadout, undefined, snap);
-    case "StationScene":
-      return new StationScene(captain, seed, loadout, String(snap.scene.params?.stationId ?? ""));
-    case "PlanetLandingScene":
-      return new PlanetLandingScene(captain, seed, loadout, String(snap.scene.params?.planetId ?? ""));
-    case "PlanetScene":
-      return new PlanetScene(captain, seed, loadout, String(snap.scene.params?.planetId ?? ""));
-    default:
-      return new SpaceScene(captain, seed, loadout);
-  }
-}
 
 interface Star {
   x: number;
@@ -95,7 +55,7 @@ export class TitleScene extends Scene {
     if (!this.pickingSlot && this.elapsed >= this.acceptInputAfter) {
       for (const code of ["Space", "Enter", "KeyZ", "KeyX", "KeyW", "KeyA", "KeyS", "KeyD"]) {
         if (ctx.input.wasKeyPressed(code)) {
-          ctx.changeScene(new CharacterCreationScene());
+          ctx.changeScene(new WitnessCreationScene());
           return;
         }
       }
@@ -116,12 +76,12 @@ export class TitleScene extends Scene {
     const cy = r.internalHeight / 2;
 
     const titleAlpha = Math.min(1, this.elapsed / this.titleFadeIn);
-    const titleColor = fade("#e8b060", titleAlpha);
-    r.drawText("BLACK STAR", cx - 48, cy - 28, titleColor, 16);
+    const titleColor = fade("#c9a04b", titleAlpha);
+    r.drawText("THE NINTH HEIR", cx - 64, cy - 28, titleColor, 16);
 
     if (this.elapsed > this.titleFadeIn * 0.6) {
       const subAlpha = Math.min(1, (this.elapsed - this.titleFadeIn * 0.6) / 0.8);
-      r.drawText("a galaxy in ruin", cx - 44, cy - 4, fade("#806040", subAlpha), 8);
+      r.drawText("plainly, and without mercy", cx - 68, cy - 4, fade("#8b7355", subAlpha), 8);
     }
 
     if (this.elapsed > this.titleFadeIn + 0.3) {
@@ -151,9 +111,9 @@ export class TitleScene extends Scene {
         onPick: (id) => {
           const snap = SaveStore.loadFromSlot(id, migrations);
           if (snap) {
-            ctx.changeScene(sceneFromSnapshot(snap));
+            ctx.changeScene(new CabinScene());
           } else {
-            ctx.changeScene(new CharacterCreationScene());
+            ctx.changeScene(new WitnessCreationScene());
           }
         },
         onCancel: () => { this.pickingSlot = false; },
