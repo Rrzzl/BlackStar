@@ -126,4 +126,66 @@ If someone offers to draw something for the game, send them:
 
 ---
 
-*Last updated: 2026-04-20. Revisit when the visual language evolves.*
+## Pixel-art specification (locked 2026-04-21)
+
+The earlier sections of this guide describe the painterly aspiration (Blasphemous as north star). That aspiration stays as the tonal reference for mood, lighting, and subject matter. For the actual shipped art, the project has committed to a more producible target.
+
+**Tonal reference for execution: Chained Echoes / Lisa the Painful.** Not Blasphemous, not Hollow Knight. Blasphemous is too ambitious for solo production and fights the gothic-melancholy tone the game wants anyway. The Chained Echoes level of craft is achievable with Aseprite, AI-assisted references, and discipline.
+
+### Character sprites
+
+- **Scale:** 32-40 pixels tall per character. Big enough for a belted robe, a visible signet, a weapon at the hip. Small enough to animate without pain.
+- **Proportions:** Slightly heroic — not chibi. Head-to-body ratio roughly 1:3.5. No smiling. Faces read as weathered, not cute.
+- **Faces:** Visible by default. Two-pixel eyes, one-pixel mouths, readable expression. Hooded alternate sprite states exist for ceremony, stealth, and Order rites — but most of the game shows the Witness's face.
+- **Construction:** Full-body standing figures. Strong silhouette. Lit implicitly from a single off-frame candle — rim highlight one side, contact shadow below.
+
+### Palette (locked base)
+
+Long Record palette is the canonical base for all world-layer pixel art:
+
+- Deep shadow: `#1a1410`
+- Parchment bone: `#e8dcc4`, `#c9b896`
+- Ecclesiastical gold: `#c9a04b`
+- Candle warmth: `#f4c57a`
+- Rust / old blood: `#6b2818`
+
+Mostly locked. Story-beat exceptions permitted but rare:
+- Elara may carry one non-palette color (unspecified; discover when she is designed)
+- A claimant's throne room may push one unusual hue for visual shock (Argent Court silver-white; a Senate chamber's peculiar green)
+
+Muted, not monochrome. The game should read as *candlelit*, not desaturated.
+
+### Grid discipline
+
+- **Sharp, no anti-aliasing.** Every pixel is placed. Never scaled with smoothing. Aseprite's native export only.
+- **One palette per scene** unless a story beat justifies otherwise.
+- **Outlines are dark brown (`#1a1410`), not black,** matching the earlier spec.
+
+### Two visual languages — by design
+
+This is the most important partition in the style guide:
+
+- **The world layer** is pixel. Characters, tiles, props, effects. Rendered by the engine's `drawRect` / `drawSprite` pipeline.
+- **The Long Record layer** is illustrated — parchment, wax, gold foil, ink, serif typography (IM Fell English, Cormorant Garamond, Uncial Antiqua). Rendered as overlay UI. See `src/ui/LongRecord.html` for the aesthetic target.
+
+They do not bleed. The Record never appears pixelated. The world never appears parchmented. When the Witness writes, the screen flips from one language to the other — that flip is itself a designed beat.
+
+The rare crossover: wax seals, torn pages, and pressed flowers can appear as pixel props in the world (on desks, in safes) while their primary representation remains in the Record.
+
+### Sprite-burden estimate per character
+
+- **Characters in both camera modes** (Witness, Elara if extracted, any companion): top-down front/back/left/right walk cycles + side-view left/right walk, idle, attack, hit, roll. Roughly 10-12 sprite states.
+- **Characters in top-down only** (Sevasti, shopkeepers, most NPCs): 4 walk cycles + idle. Roughly 5 states.
+- **Characters in side-view only** (enemies, bosses): idle, walk, attack variants, hit, death. Roughly 6-8 states.
+
+### Pipeline
+
+1. AI concept — GPT-Image / Midjourney / Gemini for first-pass reference. Locked prompt forthcoming.
+2. Aseprite hand-pixeling, guided by the reference but not tracing it.
+3. Frame-by-frame animation: 4-6 frames per walk, 2-4 per attack.
+4. PNG sheets into `src/assets/sprites/`, naming convention `{character}_{mode}_{state}_{frame}.png`.
+5. Blender is not required. Revisit only if a character demands multi-angle consistency beyond what hand-pixeling sustains.
+
+---
+
+*Last updated: 2026-04-21. Revisit when the visual language evolves.*

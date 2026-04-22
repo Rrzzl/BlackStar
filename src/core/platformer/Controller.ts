@@ -1,3 +1,4 @@
+// Side-view boss combat controller. Top-down handled separately in TopDownController.
 export interface ControllerState {
   vx: number;
   vy: number;
