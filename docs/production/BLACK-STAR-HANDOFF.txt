@@ -1,14 +1,36 @@
 ================================================================================
- NOTE (2026-04-21): Living lore doc added. Hybrid camera, pixel-art direction,
- and ship-as-hub locked. The codebase has been reshaped for "The Ninth Heir" —
- old space-combat scenes and economy are archived under src/_archive/. The
- sections below describing SpaceScene, StationScene, dogfight combat, and the
- sector simulation are HISTORICAL; they document what shipped at m3a-complete
- and no longer describe the live game shape.
+ NOTE (2026-04-22): v6 adopted. Takers locked as the non-Witness enforcer
+ class name (Act 0 + Act III). Title screen source assets are 2048x1024,
+ downsampled to the engine's 640x360 internal resolution at draw time.
+ Engine resolution is unchanged across the project.
+
+ Start here:
+   1. docs/production/world-bible-v6.md — authoritative canon
+      (story, design, art, workflow)
+   2. docs/production/ui-specs/title-screen.md — title screen spec
+      (for TitleScene work)
+   3. This file (BLACK-STAR-HANDOFF.txt) — session state and in-flight work
+
+ v5 archived at docs/_archive/production/world-bible-v5.md.
+ black-star-lore.md archived at docs/_archive/production/black-star-lore.md
+ (folded into v6).
+ HANDOFF-2026-04-22.md archived at docs/_archive/production/ (point-in-time
+ snapshot, superseded by v6). Do not cite v5 or the archived lore doc for
+ new decisions.
+================================================================================
+
+================================================================================
+ NOTE (2026-04-21): Living lore doc added (since folded into v6, archived).
+ Hybrid camera, pixel-art direction, and ship-as-hub locked. The codebase has
+ been reshaped for "The Ninth Heir" — old space-combat scenes and economy
+ are archived under src/_archive/. The sections below describing SpaceScene,
+ StationScene, dogfight combat, and the sector simulation are HISTORICAL;
+ they document what shipped at m3a-complete and no longer describe the live
+ game shape.
 
  Current authoritative sources, in order of precedence:
-   Lore working doc (newest):    docs/production/black-star-lore.md
-   World Bible (story spine):    docs/production/world-bible-v5.md
+   World Bible (canon):          docs/production/world-bible-v6.md
+   Title screen spec:            docs/production/ui-specs/title-screen.md
    What-to-work-on-next compass: docs/compass.md
    Visual style guide:           docs/style-guide.md
 
@@ -19,7 +41,7 @@
 
 ================================================================================
  NOTE (2026-04-20): Story, scope, and milestone plan have been superseded.
- Authoritative story source:     docs/production/world-bible-v5.md
+ Authoritative story source:     docs/production/world-bible-v6.md
  What-to-work-on-next compass:   docs/compass.md
  Visual style guide:             docs/style-guide.md
 

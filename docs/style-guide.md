@@ -188,4 +188,28 @@ The rare crossover: wax seals, torn pages, and pressed flowers can appear as pix
 
 ---
 
-*Last updated: 2026-04-21. Revisit when the visual language evolves.*
+## Typography
+
+Four font families. Each has a specific role. Do not substitute.
+
+- **Cinzel** — institutional. Title card, menus, formal Order documents (edicts, seals, claimant correspondence rendered in the pixel world).
+- **Uncial Antiqua** — intimate sacred text. Long Record volume names, founding rite display, ritual inscriptions. Never used in menus or UI chrome.
+- **Cormorant Garamond** — prompt text, UI body copy. Acceptable as a Cinzel fallback if Cinzel fails to load for any reason.
+- **IM Fell English** — Long Record entry body text. The handwriting-adjacent serif. Used for predecessor entries, player entries, and anything that reads as written-by-hand-in-the-book.
+
+### Loading
+
+Fonts load per-scene. A scene loads only the families it uses:
+- TitleScene: Cinzel, Cormorant Garamond.
+- Long Record UI: Uncial Antiqua, IM Fell English, Cormorant Garamond.
+- In-game pixel-world overlays: Cinzel (for institutional captions), Cormorant Garamond (for body).
+
+A font that pops in mid-fade is a rendering bug. Block scene-enter completion on font readiness.
+
+### License notes
+
+All four families are open-source (SIL Open Font License or similar permissive). Verify license terms in `src/assets/fonts/LICENSES/` before shipping.
+
+---
+
+*Last updated: 2026-04-22. Revisit when the visual language evolves.*

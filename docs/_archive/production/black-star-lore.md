@@ -266,6 +266,73 @@ Every trip between locations is an authored scene. No generic loading screens.
 
 ---
 
+### The Witness as Singular Position
+
+The Witness is not merely a rank within the Order — it is the Order's apex position, and only one Witness is alive at a time. The full internal hierarchy of the Order is not yet designed (lower classes with their own jobs, names, and authority structures remain to be fleshed out), but the structural fact of Witness-as-singular is locked:
+
+- The Order at all times has exactly one Witness.
+- When a Witness dies, the Order has no Witness until the replacement is made via the Body-Bell-Binding ritual.
+- This means the player's Witness is unique in the galaxy while alive. Not one Witness among many — *the* Witness.
+- Sevasti's letters, claimant receptions, and Order internal operations all assume a single Witness at a time.
+- Ending ζ's exposure-of-the-forgery carries additional weight under this rule: while the Order purges and replaces the disgraced Witness, the Order is *without* a Witness, which has no historical precedent and no institutional procedure for.
+
+The full Order hierarchy — lower ranks, enforcer classes (who retrieve bodies, strip signets, perform Takings), administrative tiers, the seniority system that feeds Witnesses upward from somewhere — is a dedicated future session.
+
+---
+
+## Canonized Design Principles
+
+Character-level design doctrine that emerged in the 2026-04-21 art session. These are locked and govern all future character work.
+
+### The Rust-Red Thread
+
+Every Witness's uniform carries rust-red stitching at the collar and cuffs — hand-sewn into every robe as a 900-year tradition no one explains aloud. The palette already contains rust (`#6b2818`) as the permitted minor accent. Now it has doctrine: the rust thread is **the Order's private pain, stitched into every uniform**. Subtle by design. The player doesn't notice until their second or third playthrough. When they notice, it reframes every Witness they've ever seen.
+
+The rust thread is the only chromatic accent permitted on Witness sprites. It is not decorative — it is the Order sewing its own cost into its people.
+
+### Iconic But Variant
+
+Every Witness must be *immediately* recognizable as Order from across a room. No two Witnesses may be identical. The design solution:
+
+**Invariants (shared across every Witness, 900 years):**
+- Layered grey robe silhouette — identical shape on every Witness regardless of body
+- The Order signet at chest (three concentric rings, muted ecclesiastical gold)
+- Record-issue short blade at left hip (plain, functional, identical across all Witnesses)
+- Rust-red thread at collar and cuffs
+
+**Variants (permitted individual difference):**
+- Age bracket (Young / Tempered / Elder)
+- Build (slender / average / heavy)
+- Skin tone (full range)
+- Hair (styles, lengths, colors — always tied back, pulled, or cropped; never loose or ornamental)
+- Background-specific additions layered over the base grey (campaign coat, scholar robes, surgical apron, etc. — overlays, not replacements)
+- Small personal marks: prayer knot, worn icon on cord, scars, worn book of hours
+
+The test: three Witnesses standing together must read as *all clearly Order, all clearly different people.*
+
+### Character Distillations
+
+Locked as in-world or authorial truth about major characters. These are the one-line summaries the game's art direction and narrative must both serve.
+
+**The Witness:**
+- *"You are not a hero. You are a Record."*
+- *"You are the Order's memory made flesh."*
+- *"They do not fear your blade. They fear your ink."*
+
+**Elara Vesh:**
+- *"She has read the letters. She has done the math. She does not fear death. She fears what her death will cost others."*
+
+### Character Signature Colors
+
+Each major character is permitted at most one small non-palette detail that is *theirs alone* — a visual signature tied to their interiority, not their office.
+
+- **Elara Vesh — Faded Starlight Blue.** Used only in intimate, personal objects: her hair ribbon, wrist thread, letter bookmark, the night sky she studies. Never in imperial display. The color of memory, not power.
+- **The Witness — No signature color.** The Witness lives entirely within the Order's palette. The rust-red thread IS the accent, and it is not personal — it is the Order's mark on them. That the Witness has no color of their own is itself the character statement.
+
+Future signature colors (Sevasti, claimants, companions) to be decided as characters are designed. Each must be justified by interiority, used only in intimate objects, and absent from public or institutional contexts.
+
+---
+
 ## Open Questions (Active)
 
 - What is the text of the Order's founding rite? (Act I)
@@ -283,6 +350,10 @@ Every trip between locations is an authored scene. No generic loading screens.
 **2026-04-21 (morning)** — Opening sequence structure locked (four-act: Bell / Binding / Taking / Desk). Order reframed from orchestrator to opportunist. Six backgrounds rewritten with three Taking variations each. Art direction pivoted away from Blasphemous-painterly toward full-body illustrated sprites.
 
 **2026-04-21 (evening)** — Major design pass. Art direction locked to sharp pixel art, 32-40px tall, Chained Echoes / Lisa the Painful tonal reference (Path B). Palette locked to Long Record base with story-beat exceptions. Faces visible by default. Camera locked as hybrid — top-down for overworld / courts / hubs, side-view for boss combat only. Combat model split: top-down for regular encounters and mini-bosses, side-view for ~5-12 handcrafted boss setpieces. Ship locked as walkable top-down hub, no offensive weapons, chaff-launcher only — Witness's power is documentary, not violent. Ship travel locked as scripted scenes every trip. Ship combat as a system eliminated from scope. Existing platformer substrate retains full value in side-view boss mode.
+
+**2026-04-21 (late evening)** — GPT Image 2 character brief generation proved out as a meaningful creative capability, not just a sprite production tool. Full character briefs (turnaround + variants + in-scene mockup + profile + personal marks) produced for Elara Vesh and The Witness. Three design principles canonized from that work: (1) the rust-red thread doctrine as the Order's private pain stitched into every uniform, (2) the "Iconic but Variant" principle governing all Witness design going forward, (3) character signature colors — Elara gets Faded Starlight Blue for intimate objects only; the Witness has no signature, which is itself the character statement. Three Witness distillations locked as canonical tone anchors: *"You are not a hero. You are a Record."* / *"You are the Order's memory made flesh."* / *"They do not fear your blade. They fear your ink."* Character briefs saved as `witness_characterbrief_v1.png` and `elara_vesh_characterbrief_v1.png` in `docs/production/art-reference/`.
+
+**2026-04-21 (late evening, cont'd)** — Opening sequence restructured into five acts with The Body added as prologue (shared with death/respawn loop). Title screen reconceived as pure-cinematic outside-the-book experience — 4-6 iconic scene rotation, clean candle-gold menu options, deliberately non-diegetic to contrast the book-as-interior Act 0-IV opening. Witness locked as singular apex position within Order — one Witness alive at a time, Order has full hierarchy with other ranks yet to be designed. Opening sequence spec committed to repo at `docs/production/opening-sequence.md`. Title screen GPT brief drafted for asset generation.
 
 ---
 
