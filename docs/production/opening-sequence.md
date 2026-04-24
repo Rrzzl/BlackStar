@@ -20,7 +20,7 @@ One low bell strike.
 
 The Long Record opens on a new desk — an intake desk the Order keeps for exactly this purpose. Empty page. Freshly lit candle.
 
-An invisible hand lifts the quill. In cramped ecclesiastical script (Korien Vael's original hand), the Order's founding rite writes itself onto the page. Translation appears in smaller italics below. Reads as holy on first encounter. Is cruel on reflection. The rite text is unwritten as of this doc — pending its own authoring session.
+An invisible hand lifts the quill. In cramped ecclesiastical script (Korien Vael's original hand), the Order's founding rite writes itself onto the page. The rite is a prayer to the Black Star. Translation appears in smaller italics below. Reads as holy on first encounter. Is cruel on reflection. The rite text is unwritten as of this doc — pending its own authoring session.
 
 The rite completes. The page turns.
 

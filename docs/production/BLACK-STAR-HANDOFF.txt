@@ -1,22 +1,36 @@
 ================================================================================
+ NOTE (2026-04-23 evening): v8.1 adopted. Supersedes v5, v6, v7 patch, and
+ v8 morning. The one-Witness cosmology is canonical: there has only ever
+ been one Witness across all history; the chamber figure beneath Tessarene
+ is his sleeping self; the player is his current waking. Black Star predates
+ the first Witness. Progression mechanic is the Witness-Elara-relic loop.
+ Open-world after the fixed opening. Ending-specific kill requirements.
+ GRRM-route on kills. Ritual ending genuinely hidden. Taker spritesheet v1
+ accepted (poses 1-5 canonical).
+
+ Start here:
+   1. docs/production/black-star-handoff-v8-1.md — operational state (5 min)
+   2. docs/production/black-star-glossary-v8-1.md — terminology (3 min)
+   3. docs/production/world-bible-v8-1.md — authoritative canon (45 min)
+   4. docs/production/ui-specs/title-screen.md — title screen spec
+      (for TitleScene work)
+   5. This file (BLACK-STAR-HANDOFF.txt) — historical session state
+
+ Archive:
+   docs/_archive/production/world-bible-v5.md (superseded)
+   docs/_archive/production/world-bible-v6.md (superseded by v8.1)
+   docs/_archive/production/black-star-lore.md (folded into v6, then v8.1)
+   docs/_archive/production/HANDOFF-2026-04-22.md (point-in-time snapshot)
+
+ Do not cite v5, v6, v7, or v8 morning for new decisions. v8.1 is canon.
+================================================================================
+
+================================================================================
  NOTE (2026-04-22): v6 adopted. Takers locked as the non-Witness enforcer
  class name (Act 0 + Act III). Title screen source assets are 2048x1024,
  downsampled to the engine's 640x360 internal resolution at draw time.
  Engine resolution is unchanged across the project.
-
- Start here:
-   1. docs/production/world-bible-v6.md — authoritative canon
-      (story, design, art, workflow)
-   2. docs/production/ui-specs/title-screen.md — title screen spec
-      (for TitleScene work)
-   3. This file (BLACK-STAR-HANDOFF.txt) — session state and in-flight work
-
- v5 archived at docs/_archive/production/world-bible-v5.md.
- black-star-lore.md archived at docs/_archive/production/black-star-lore.md
- (folded into v6).
- HANDOFF-2026-04-22.md archived at docs/_archive/production/ (point-in-time
- snapshot, superseded by v6). Do not cite v5 or the archived lore doc for
- new decisions.
+ SUPERSEDED by v8.1 (2026-04-23 evening). Retained for session history only.
 ================================================================================
 
 ================================================================================

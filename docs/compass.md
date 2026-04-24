@@ -6,12 +6,14 @@
 
 ## Where we are
 
-- **Canon:** `docs/production/world-bible-v6.md` is the authoritative source for story, design, art, and workflow. Supersedes v5.
-- **Title screen spec:** `docs/production/ui-specs/title-screen.md` — first UI spec written in the GPT-visual-plus-prose-spec handoff model codified in v6 Part Five.
-- **Superseded:** `docs/_archive/production/world-bible-v5.md` — retained for reference only. Do not cite for new decisions.
+- **Canon:** `docs/production/world-bible-v8-1.md` is the authoritative source for story, design, art, and workflow. Supersedes all prior bibles (v5, v6, v7 patch, v8 morning).
+- **Glossary:** `docs/production/black-star-glossary-v8-1.md` — one-line definitions for every proper noun and key mechanic. Quick reference for new chats and asset briefs.
+- **Handoff:** `docs/production/black-star-handoff-v8-1.md` — operational state. Read first when opening a new session.
+- **Title screen spec:** `docs/production/ui-specs/title-screen.md` — UI spec in the GPT-visual-plus-prose-spec handoff model.
+- **Superseded:** `docs/_archive/production/world-bible-v5.md` and `docs/_archive/production/world-bible-v6.md` — retained for reference only. Do not cite for new decisions.
 - **Superseded:** `docs/_archive/production/black-star-lore.md` — living lore journal folded into v6, archived 2026-04-22.
 - **Code:** The Black Star codebase has been reshaped for *The Ninth Heir*. Space combat, economy, and the old character creation have been archived to `src/_archive/`. Engine + platformer substrate + TitleScene + Cabin/Witness/Court/Planet scene stubs are live. No art yet — rectangles on dark backgrounds are the correct placeholder.
-- **Art:** Character briefs for the Witness and Elara produced; reference PNGs at `docs/production/art-reference/{witness,elara,ui}/`. Style guide (`docs/style-guide.md`) and v6 Part Three together define the full visual spec. Character pipeline is AI concept → Aseprite hand-pixel → PNG sheets under `src/assets/sprites/`.
+- **Art:** Character briefs for the Witness and Elara produced; Taker spritesheet v1 accepted. Reference PNGs at `docs/production/art-reference/{witness,elara,takers,ui}/`. Style guide (`docs/style-guide.md`) and v8.1 Part Eleven together define the full visual spec. Character pipeline is AI concept → Aseprite hand-pixel → PNG sheets under `src/assets/sprites/`.
 
 ## Architectural commitments (locked 2026-04-21)
 
@@ -20,7 +22,7 @@ These are no longer open questions. Work should honor them.
 - **Hybrid camera.** Top-down (three-quarter) is the default for overworld travel, ship interior, claimant courts, hubs, dialogue scenes. Side-view platformer is reserved for handcrafted boss encounters only, roughly 5-12 across the whole game.
 - **The M3a platformer substrate is NOT deprecated.** It has a new, narrower role: side-view boss combat. `src/core/platformer/` (TileMap, Physics2D, Collision, Controller, TiledLoader) retains full value under this new framing.
 - **Top-down controller does not exist yet.** It is stubbed at `src/core/controllers/TopDownController.ts`. 4-direction movement, no gravity, tile-edge collision, iframe roll, primary + secondary weapon slots. To be implemented when overworld work starts.
-- **The camera-mode switch is a diegetic beat.** Whip-pan + parchment-edge vignette + sound cue (bell / door / quill dropped). The Record turns the page. See `world-bible-v6.md` Part Two for the design spec.
+- **The camera-mode switch is a diegetic beat.** Whip-pan + parchment-edge vignette + sound cue (bell / door / quill dropped). The Record turns the page. See `world-bible-v8-1.md` Part Ten for the design spec.
 - **Combat is split by camera.** Top-down for regular encounters, mini-bosses, exploration jumpscares, and optional hidden bosses. Side-view for the handcrafted boss setpieces. HP / stagger / iframes / status model is shared across both.
 - **Ship is a walkable top-down hub, not a vehicle UI.** The Impartial Regard has rooms (Cabin, bridge, hold, galley). The player walks them. Stubbed at `src/scenes/ShipInteriorScene.ts`.
 - **Ship combat is eliminated from scope.** The ship is unarmed. The only defensive tool is a chaff-launcher used in scripted encounters. Space sector simulation, dogfight physics, piloting UI, and transit resource management are all cut.
@@ -101,7 +103,7 @@ These will matter someday. Not today.
 
 ## Story questions that are open
 
-Tracked in `world-bible-v6.md` Part Six (Open Questions). Answer them when a system forces you to.
+Tracked in `world-bible-v8-1.md` Part Fourteen (Open Questions). Answer them when a system forces you to.
 
 ---
 
