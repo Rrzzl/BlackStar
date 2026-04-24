@@ -6,3 +6,5 @@ dist
 .vscode
 .idea
 coverage
+Black Star code Base/
+.claude/settings.local.json
