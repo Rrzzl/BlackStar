@@ -7,6 +7,7 @@ import type { WitnessProfile } from "@core/player/WitnessProfile";
 import { Scene, type SceneContext } from "@engine/Scene";
 import { drawLabel } from "@ui/Label";
 import { TitleScene } from "./TitleScene";
+import { WITNESS_FRONT_IDLE_SPRITE_SIZE, WitnessFrontIdleSprite } from "./WitnessSprite";
 
 const PLAYER_W = 10;
 const PLAYER_H = 14;
@@ -42,12 +43,15 @@ export class CabinScene extends Scene {
   };
   private paused = false;
   private pauseSelectedIdx = 0;
+  private readonly witnessSprite = new WitnessFrontIdleSprite();
 
   constructor(private readonly profile?: WitnessProfile) {
     super();
   }
 
-  enter(_ctx: SceneContext): void {}
+  enter(ctx: SceneContext): void {
+    void this.witnessSprite.load(ctx.assets);
+  }
 
   update(ctx: SceneContext, dt: number): void {
     if (ctx.input.wasKeyPressed("Escape")) {
@@ -107,6 +111,14 @@ export class CabinScene extends Scene {
 
   private drawWitness(ctx: SceneContext): void {
     const r = ctx.renderer;
+    const sprite = this.witnessSprite.current;
+    if (sprite) {
+      const x = this.player.x - WITNESS_FRONT_IDLE_SPRITE_SIZE.w / 2;
+      const y = this.player.y + PLAYER_H / 2 - WITNESS_FRONT_IDLE_SPRITE_SIZE.h;
+      r.ctx.drawImage(sprite, x, y, WITNESS_FRONT_IDLE_SPRITE_SIZE.w, WITNESS_FRONT_IDLE_SPRITE_SIZE.h);
+      return;
+    }
+
     const x = this.player.x - PLAYER_W / 2;
     const y = this.player.y - PLAYER_H / 2;
     const body = this.appearanceColor();
