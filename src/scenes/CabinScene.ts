@@ -28,12 +28,26 @@ const CONTROLLER_CFG: TopDownControllerConfig = {
 const PAUSE_OPTIONS = ["RESUME", "RETURN TO TITLE"] as const;
 type PauseOption = (typeof PAUSE_OPTIONS)[number];
 
+export const CABIN_ROOM_TITLE = "MOVEMENT TEST ROOM";
+
 interface Rect {
   x: number;
   y: number;
   w: number;
   h: number;
 }
+
+const CABIN_DESK: Rect = { x: 284, y: 80, w: 72, h: 34 };
+const CABIN_LEFT_LOCKER: Rect = { x: 120, y: 82, w: 54, h: 26 };
+const CABIN_RIGHT_LOCKER: Rect = { x: 466, y: 82, w: 54, h: 26 };
+const CABIN_FOOT_RAIL: Rect = { x: 124, y: 258, w: 392, h: 10 };
+
+export const CABIN_OBSTACLES: readonly Rect[] = [
+  CABIN_DESK,
+  CABIN_LEFT_LOCKER,
+  CABIN_RIGHT_LOCKER,
+  CABIN_FOOT_RAIL,
+];
 
 export class CabinScene extends Scene {
   private player: TopDownControllerState = {
@@ -64,7 +78,7 @@ export class CabinScene extends Scene {
       return;
     }
 
-    this.player = updateTopDownController(
+    const nextPlayer = updateTopDownController(
       this.player,
       {
         up: ctx.input.isKeyDown("KeyW") || ctx.input.isKeyDown("ArrowUp"),
@@ -75,6 +89,7 @@ export class CabinScene extends Scene {
       dt,
       CONTROLLER_CFG,
     );
+    this.player = resolveCabinPlayerCollision(this.player, nextPlayer);
   }
 
   render(ctx: SceneContext, _alpha: number): void {
@@ -84,11 +99,12 @@ export class CabinScene extends Scene {
     r.drawRect(ROOM.x - 8, ROOM.y - 8, ROOM.w + 16, ROOM.h + 16, "#1a1410");
     r.drawRect(ROOM.x, ROOM.y, ROOM.w, ROOM.h, "#2a2420");
     r.drawRect(ROOM.x + 8, ROOM.y + 8, ROOM.w - 16, ROOM.h - 16, "#15100d");
+    this.drawFloorGrid(ctx);
 
     this.drawCabinDetails(ctx);
     this.drawWitness(ctx);
 
-    drawLabel(r, "CABIN TEST ROOM", 12, 10, "#c9a04b", 8);
+    drawLabel(r, CABIN_ROOM_TITLE, 12, 10, "#c9a04b", 8);
     drawLabel(r, `${this.profile?.chosenName ?? "Witness"}`, 12, 25, "#e8dcc4", 8);
     drawLabel(r, `${this.profile?.coverBackground ?? "No Record"}`, 12, 38, "#8a7a5c", 7);
     drawLabel(r, "WASD / arrows move", r.internalWidth / 2, r.internalHeight - 16, "#5f5042", 7, "center");
@@ -100,13 +116,32 @@ export class CabinScene extends Scene {
 
   private drawCabinDetails(ctx: SceneContext): void {
     const r = ctx.renderer;
-    r.drawRect(284, 80, 72, 34, "#3a3430");
-    r.drawRect(290, 86, 60, 20, "#1a1410");
+    const desk = CABIN_DESK;
+    const leftLocker = CABIN_LEFT_LOCKER;
+    const rightLocker = CABIN_RIGHT_LOCKER;
+    const footRail = CABIN_FOOT_RAIL;
+
+    r.drawRect(desk.x, desk.y, desk.w, desk.h, "#3a3430");
+    r.drawRect(desk.x + 6, desk.y + 6, desk.w - 12, desk.h - 14, "#1a1410");
     drawLabel(r, "DESK", 320, 92, "#8a7a5c", 6, "center");
 
-    r.drawRect(120, 82, 54, 14, "#3a3430");
-    r.drawRect(466, 82, 54, 14, "#3a3430");
-    r.drawRect(124, 258, 392, 10, "#3a3430");
+    r.drawRect(leftLocker.x, leftLocker.y, leftLocker.w, leftLocker.h, "#3a3430");
+    r.drawRect(leftLocker.x + 4, leftLocker.y + 4, leftLocker.w - 8, 4, "#1a1410");
+    r.drawRect(rightLocker.x, rightLocker.y, rightLocker.w, rightLocker.h, "#3a3430");
+    r.drawRect(rightLocker.x + 4, rightLocker.y + 4, rightLocker.w - 8, 4, "#1a1410");
+    r.drawRect(footRail.x, footRail.y, footRail.w, footRail.h, "#3a3430");
+  }
+
+  private drawFloorGrid(ctx: SceneContext): void {
+    const r = ctx.renderer;
+    for (let x = ROOM.x + 40; x < ROOM.x + ROOM.w - 24; x += 40) {
+      r.drawRect(x, ROOM.y + 10, 1, ROOM.h - 20, "#1e1712");
+    }
+    for (let y = ROOM.y + 40; y < ROOM.y + ROOM.h - 16; y += 40) {
+      r.drawRect(ROOM.x + 10, y, ROOM.w - 20, 1, "#1e1712");
+    }
+    r.drawRect(ROOM.x + 218, ROOM.y + 206, 20, 1, "#5a3827");
+    r.drawRect(ROOM.x + 228, ROOM.y + 196, 1, 20, "#5a3827");
   }
 
   private drawWitness(ctx: SceneContext): void {
@@ -193,6 +228,58 @@ export class CabinScene extends Scene {
 
 export function nextPauseSelection(current: number, delta: number): number {
   return (current + delta + PAUSE_OPTIONS.length) % PAUSE_OPTIONS.length;
+}
+
+export function resolveCabinPlayerCollision(
+  prev: TopDownControllerState,
+  next: TopDownControllerState,
+): TopDownControllerState {
+  const x = resolveCabinAxis(prev.x, next.x, prev.y, "x");
+  const y = resolveCabinAxis(prev.y, next.y, x, "y");
+  return { x, y, facing: next.facing };
+}
+
+function resolveCabinAxis(
+  from: number,
+  to: number,
+  otherAxisCenter: number,
+  axis: "x" | "y",
+): number {
+  let resolved = to;
+  for (const obstacle of CABIN_OBSTACLES) {
+    const player =
+      axis === "x"
+        ? playerRect(resolved, otherAxisCenter)
+        : playerRect(otherAxisCenter, resolved);
+    if (!intersects(player, obstacle)) continue;
+
+    if (axis === "x") {
+      resolved = to > from
+        ? obstacle.x - PLAYER_W / 2
+        : obstacle.x + obstacle.w + PLAYER_W / 2;
+    } else {
+      resolved = to > from
+        ? obstacle.y - PLAYER_H / 2
+        : obstacle.y + obstacle.h + PLAYER_H / 2;
+    }
+  }
+  return resolved;
+}
+
+function playerRect(centerX: number, centerY: number): Rect {
+  return {
+    x: centerX - PLAYER_W / 2,
+    y: centerY - PLAYER_H / 2,
+    w: PLAYER_W,
+    h: PLAYER_H,
+  };
+}
+
+function intersects(a: Rect, b: Rect): boolean {
+  return a.x < b.x + b.w
+    && a.x + a.w > b.x
+    && a.y < b.y + b.h
+    && a.y + a.h > b.y;
 }
 
 function pausePanel(width: number, height: number): Rect {

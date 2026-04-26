@@ -1,3 +1,22 @@
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export function internalPointFromCssPoint(
+  mx: number,
+  my: number,
+  cssWidth: number,
+  cssHeight: number,
+  internalWidth: number,
+  internalHeight: number,
+): Point {
+  const scale = Math.min(cssWidth / internalWidth, cssHeight / internalHeight);
+  const offsetX = (cssWidth - internalWidth * scale) / 2;
+  const offsetY = (cssHeight - internalHeight * scale) / 2;
+  return { x: (mx - offsetX) / scale, y: (my - offsetY) / scale };
+}
+
 export class Renderer {
   readonly canvas: HTMLCanvasElement;
   readonly ctx: CanvasRenderingContext2D;
@@ -55,10 +74,15 @@ export class Renderer {
     this.ctx.fillText(text, x, y);
   }
 
-  mouseToInternal(mx: number, my: number): { x: number; y: number } {
-    const s = this.scale;
-    const offsetX = (this.canvas.width - this.internalWidth * s) / 2;
-    const offsetY = (this.canvas.height - this.internalHeight * s) / 2;
-    return { x: (mx - offsetX) / s, y: (my - offsetY) / s };
+  mouseToInternal(mx: number, my: number): Point {
+    const rect = this.canvas.getBoundingClientRect();
+    return internalPointFromCssPoint(
+      mx,
+      my,
+      rect.width,
+      rect.height,
+      this.internalWidth,
+      this.internalHeight,
+    );
   }
 }

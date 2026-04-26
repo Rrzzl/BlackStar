@@ -1,3 +1,16 @@
+interface ClientRectOrigin {
+  left: number;
+  top: number;
+}
+
+export function localMousePoint(
+  clientX: number,
+  clientY: number,
+  rect: ClientRectOrigin,
+): { x: number; y: number } {
+  return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
 export class Input {
   private keysDown = new Set<string>();
   private keysPressedThisFrame = new Set<string>();
@@ -11,6 +24,12 @@ export class Input {
   mouseY = 0;
 
   constructor(target: HTMLElement) {
+    const updateMousePosition = (e: MouseEvent): void => {
+      const point = localMousePoint(e.clientX, e.clientY, target.getBoundingClientRect());
+      this.mouseX = point.x;
+      this.mouseY = point.y;
+    };
+
     window.addEventListener("keydown", (e) => {
       if (e.repeat) return;
       if (!this.keysDown.has(e.code)) {
@@ -25,6 +44,7 @@ export class Input {
     });
 
     target.addEventListener("mousedown", (e) => {
+      updateMousePosition(e);
       if (!this.mouseDown.has(e.button)) {
         this.mousePressedThisFrame.add(e.button);
       }
@@ -32,14 +52,13 @@ export class Input {
     });
 
     target.addEventListener("mouseup", (e) => {
+      updateMousePosition(e);
       this.mouseDown.delete(e.button);
       this.mouseReleasedThisFrame.add(e.button);
     });
 
     target.addEventListener("mousemove", (e) => {
-      const rect = target.getBoundingClientRect();
-      this.mouseX = e.clientX - rect.left;
-      this.mouseY = e.clientY - rect.top;
+      updateMousePosition(e);
     });
 
     target.addEventListener("contextmenu", (e) => e.preventDefault());

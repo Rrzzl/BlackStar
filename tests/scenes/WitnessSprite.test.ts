@@ -22,15 +22,21 @@ describe("WitnessFrontIdleSprite", () => {
   });
 
   it("keeps fallback active when the PNG is missing", async () => {
+    const error = new Error("missing sprite");
+    const warn = vi.fn();
     const loadImage = vi.fn(async () => {
-      throw new Error("missing sprite");
+      throw error;
     });
-    const sprite = new WitnessFrontIdleSprite();
+    const sprite = new WitnessFrontIdleSprite({ warn });
 
     await expect(sprite.load({ loadImage })).resolves.toBeUndefined();
 
     expect(sprite.status).toBe("failed");
     expect(sprite.current).toBeNull();
+    expect(warn).toHaveBeenCalledWith(
+      `[WitnessSprite] Missing runtime sprite ${WITNESS_FRONT_IDLE_SPRITE_PATH}; using rectangle fallback.`,
+      error,
+    );
   });
 
   it("does not retry after the first load attempt", async () => {

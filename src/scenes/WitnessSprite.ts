@@ -6,9 +6,15 @@ export const WITNESS_FRONT_IDLE_SPRITE_SIZE = { w: 32, h: 48 } as const;
 
 export type WitnessSpriteStatus = "idle" | "loading" | "ready" | "failed";
 
+interface WitnessSpriteLogger {
+  warn(message: string, error: unknown): void;
+}
+
 export class WitnessFrontIdleSprite {
   private image: HTMLImageElement | null = null;
   private statusValue: WitnessSpriteStatus = "idle";
+
+  constructor(private readonly logger: WitnessSpriteLogger = console) {}
 
   get current(): HTMLImageElement | null {
     return this.image;
@@ -25,9 +31,13 @@ export class WitnessFrontIdleSprite {
     try {
       this.image = await assets.loadImage(WITNESS_FRONT_IDLE_SPRITE_URL);
       this.statusValue = "ready";
-    } catch {
+    } catch (error) {
       this.image = null;
       this.statusValue = "failed";
+      this.logger.warn(
+        `[WitnessSprite] Missing runtime sprite ${WITNESS_FRONT_IDLE_SPRITE_PATH}; using rectangle fallback.`,
+        error,
+      );
     }
   }
 }
